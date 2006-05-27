@@ -141,7 +141,8 @@ deal_with_path:
             ++s;
         }
         if (s != uri) {
-            uptr->path = malloc(s - uri);
+            uptr->path = malloc(s - uri + 1);
+            memset(uptr->path, 0, s - uri + 1);
             memcpy(uptr->path, uri, s - uri);
         }
         if (*s == 0) {
@@ -152,7 +153,8 @@ deal_with_path:
             s1 = strchr(s, '#');
             if (s1) {
                 uptr->fragment = strdup(s1 + 1);
-                uptr->query = malloc(s1 - s);
+                uptr->query = malloc(s1 - s + 1);
+                memset(uptr->query, 0, s1 - s + 1);
                 memcpy(uptr->query, s, s1 - s);
             }
             else {
@@ -175,7 +177,8 @@ deal_with_path:
         goto deal_with_path;        /* backwards predicted taken! */
     }
 
-    uptr->scheme = malloc(s - uri);
+    uptr->scheme = malloc(s - uri + 1);
+    memset(uptr->scheme, 0, s - uri + 1);
     memcpy(uptr->scheme, uri, s - uri);
     s += 3;
     hostinfo = s;
@@ -183,7 +186,8 @@ deal_with_path:
         ++s;
     }
     uri = s;        /* whatever follows hostinfo is start of uri */
-    uptr->hostinfo = malloc(uri - hostinfo);
+    uptr->hostinfo = malloc(uri - hostinfo + 1);
+    memset(uptr->hostinfo, 0, uri - hostinfo + 1);
     memcpy(uptr->hostinfo, hostinfo, uri - hostinfo);
 
     /* If there's a username:password@host:port, the @ we want is the last @...
@@ -217,17 +221,20 @@ deal_with_host:
         }
         if (s == NULL) {
             /* we expect the common case to have no port */
-            uptr->hostname = malloc(uri - hostinfo - v6_offset2);
+            uptr->hostname = malloc(uri - hostinfo - v6_offset2 + 1);
+            memset(uptr->hostname, 0, uri - hostinfo - v6_offset2 + 1);
             memcpy(uptr->hostname, hostinfo + v6_offset1,
                                    uri - hostinfo - v6_offset2);
             uptr->port = uri_port_of_scheme(uptr->scheme);
             goto deal_with_path;
         }
-        uptr->hostname = malloc(s - hostinfo - v6_offset2);
+        uptr->hostname = malloc(s - hostinfo - v6_offset2 + 1);
+        memset(uptr->hostname, 0, s - hostinfo - v6_offset2 + 1);
         memcpy(uptr->hostname, hostinfo + v6_offset1,
                                s - hostinfo - v6_offset2);
         ++s;
-        uptr->port_str = malloc(uri - s);
+        uptr->port_str = malloc(uri - s + 1);
+        memset(uptr->port_str, 0, uri - s + 1);
         memcpy(uptr->port_str, s, uri - s);
         if (uri != s) {
             port = strtol(uptr->port_str, &endstr, 10);
@@ -245,14 +252,17 @@ deal_with_host:
     /* first colon delimits username:password */
     s1 = memchr(hostinfo, ':', s - hostinfo);
     if (s1) {
-        uptr->user = malloc(s1 - hostinfo);
+        uptr->user = malloc(s1 - hostinfo + 1);
+        memset(uptr->user, 0, s1 - hostinfo + 1);
         memcpy(uptr->user, hostinfo, s1 - hostinfo);
         ++s1;
-        uptr->password = malloc(s - s1);
+        uptr->password = malloc(s - s1 + 1);
+        memset(uptr->password, 0, s - s1 + 1);
         memcpy(uptr->password, s1, s - s1);
     }
     else {
-        uptr->user = malloc(s - hostinfo);
+        uptr->user = malloc(s - hostinfo + 1);
+        memset(uptr->user, 0, s - hostinfo + 1);
         memcpy(uptr->user, hostinfo, s - hostinfo);
     }
     hostinfo = s + 1;

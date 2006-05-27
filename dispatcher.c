@@ -286,7 +286,7 @@ void process_idle(int fd, short event, void *_conn)
     struct connection *conn = (struct connection *)_conn;
     int flags, rv;
 
-    if (n_dispatched > config_opts.count) {
+    if (n_dispatched >= config_opts.count) {
         if (config_opts.verbose > 1)
             fprintf(stderr, "Finished dispatching %dth request\n",
                     n_dispatched);

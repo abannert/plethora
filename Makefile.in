@@ -1,0 +1,56 @@
+# Copyright (C) 2006 Codemass, Inc.
+#
+# @configure_input@
+
+CC = @CC@
+LDFLAGS = @LDFLAGS@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+LIBS = @LIBS@
+SHELL = @SHELL@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+
+srcdir = @srcdir@
+builddir = @builddir@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+
+TEST_TARGETS = 
+EXEC_TARGETS = plethora
+TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS}
+OBJECTS = plethora.o params.o dispatcher.o balancer.o metrics.o
+TRANSIENTS = 
+
+all: $(TARGETS)
+
+plethora: plethora.o params.o dispatcher.o balancer.o metrics.o
+	$(CC) $(LDFLAGS) plethora.o params.o dispatcher.o balancer.o metrics.o $(LIBS) -o $@
+
+#testrequest: testrequest.o request.o aliasdb.o urlcheck.o
+#	$(CC) $(LDFLAGS) testrequest.o request.o aliasdb.o urlcheck.o $(LIBS) -o $@
+
+install:
+	mkdir -p ${bindir}
+	for file in ${EXEC_TARGETS}; do \
+		${INSTALL_PROGRAM} $${file} ${bindir}; \
+	done
+
+#.deps dep deps depend: *.h *.c
+.deps dep deps depend:
+	gcc -M $(CFLAGS) $(CPPFLAGS) *.h *.c > .deps
+
+clean:
+	rm -f $(TARGETS) $(OBJECTS) $(TRANSIENTS)
+
+distclean: clean
+	rm -f Makefile config.h
+
+extraclean: distclean
+	rm -f .deps
+	rm -rf autom4te.cache
+	rm -f config.log configure config.status config.h.in
+
+include .deps

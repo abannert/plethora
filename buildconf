@@ -1,0 +1,11 @@
+#!/bin/sh
+
+wdir=`dirname $0`
+cd ${wdir}
+srcdir=`pwd`
+
+test -d ${srcdir}/autom4te.cache && rm -rf ${srcdir}/autom4te.cache
+
+autoheader
+autoconf
+

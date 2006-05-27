@@ -310,6 +310,11 @@ static size_t request_length(struct location *location)
 static size_t write_resource(struct uri *uri, char *p)
 {
     char *q = p;
+    if (config_opts.verbose > 5) {
+        fprintf(stderr, "uri->path = '%s'\n", uri->path ? uri->path : "NULL");
+        fprintf(stderr, "uri->query = '%s'\n", uri->query ? uri->query : "NULL");
+        fprintf(stderr, "uri->fragment = '%s'\n", uri->fragment ? uri->fragment : "NULL");
+    }
     if (uri->path)
         p += sprintf(p, "GET %s", uri->path);
     else

@@ -7,12 +7,5 @@ config.h.in
 config.log
 config.status
 configure
-input.test
-log.0000000001
-testaliasdb
-testaliasdb.db
-testaliasdbqueue.db
-testconn
-testrequest
-testurlcheck
+plethora
 *.swp

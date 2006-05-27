@@ -1,0 +1,62 @@
+
+             Plethora, a massive-scale HTTP client tester.
+                 (c) 2006 Codemass, Inc.
+                 http://www.codemass.com/plethora/
+
+Releases
+--------
+
+  0.0.1      - In Development
+
+Release Showstoppers
+--------------------
+
+* Per-URL average (mean) timing metrics and printed output after running
+  the test.
+
+Known Bugs
+----------
+
+* When the client runs out of sockets, we get an EADDRNOTAVAIL (on Solaris 10)
+  which looks like "Can't assign requested address". We should either
+  provide instructions for increasing system limits or we should retry
+  for a short period of time until the problem resolves itself.
+
+* Libevent has a devpoll error, here's the patch to fix it (apply to
+  libevent-1.1a):
+
+--- devpoll.c.orig    Sat May 27 15:33:51 2006
++++ devpoll.c   Sat May 27 14:50:08 2006
+@@ -140,7 +140,7 @@
+ 
+        if (getrlimit(RLIMIT_NOFILE, &rl) == 0 &&
+            rl.rlim_cur != RLIM_INFINITY)
+-               nfiles = rl.rlim_cur;
++               nfiles = rl.rlim_cur - 1;
+ 
+        /* Initialize the kernel queue */
+        if ((dpfd = open("/dev/poll", O_RDWR)) == -1) {
+
+
+Wishlist
+--------
+
+* Per-URL min/max timing metrics and printed output.
+
+* Global min/max timing metrics.
+
+Done
+----
+
+Release 0.0.1:
+
+* Basic functionality, multiple URLs, global timing metrics.
+
+* Added support for various debugging output levels through the -v option.
+
+* Added support for Solaris, tested on Solaris 10. Doesn't currently work
+  on Mac OS X due to lame non-blocking connect + kqueue bug in darwin.
+
+* Fixed a parsing bug that caused URI string corruption due to missing
+  space for null characters at the end of strings.
+

@@ -13,6 +13,9 @@
 #include "balancer.h"
 #include "metrics.h"
 
+#define MAX_HEADER (4096)
+#define BODY_BUFSIZ (131072)
+
 struct connection {
     int num;
     enum state state;
@@ -20,7 +23,7 @@ struct connection {
     int error;
     int written;
     struct location *location; /* currently fetching from this location */
-    char buf[BUFSIZ];
+    char buf[MAX_HEADER];
     ssize_t nbytes; /* number of bytes read into buffer */
     ssize_t responselen; /* total bytes read for the response */
     float http_version;
@@ -83,15 +86,15 @@ void process_closing(struct connection *conn)
     process_state(conn);
 }
 
+static char body_buf[BODY_BUFSIZ];
 void process_reading_body(int fd, short event, void *_conn)
 {
     struct connection *conn = (struct connection *)_conn;
     ssize_t count;
     int e;
-    char buf[BUFSIZ];
 
 retry:
-    count = read(fd, buf, sizeof(buf));
+    count = read(fd, body_buf, sizeof(body_buf));
     e = errno;
     if (count < 0) {
         if (e == EINTR) {

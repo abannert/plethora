@@ -68,7 +68,7 @@ struct schemes_t {
     /** The name of the scheme */
     const char *name;
     /** The default port for the scheme */
-    short default_port;
+    unsigned short default_port;
 };
 
 typedef struct schemes_t schemes_t;
@@ -272,15 +272,23 @@ static int count_locations(struct urls *urls)
     return i;
 }
 
+static size_t resource_length(struct location *location)
+{
+    size_t rlen = 0;
+    struct uri *uri = location->uri;
+    rlen += uri->path ? strlen(uri->path) : sizeof("/") - 1;
+    rlen += uri->query ? strlen(uri->query) + 1 : 0;
+    /* FIXME: do we add fragments to client requests? */
+    rlen += uri->fragment ? strlen(uri->fragment) + 1: 0;
+    return rlen;
+}
+
 static size_t request_length(struct location *location)
 {
     size_t rlen = 1; /* for the null */
     struct headers *header = config_opts.headers;
     rlen += sizeof("GET ") - 1;
-    rlen += location->uri->path ? strlen(location->uri->path) : sizeof("/") - 1;
-    rlen += location->uri->query ? strlen(location->uri->query) : 0;
-    /* FIXME: do we add fragments to client requests? */
-    rlen += location->uri->fragment ? strlen(location->uri->fragment) : 0;
+    rlen += resource_length(location);
     rlen += sizeof(" HTTP/1.1\r\n") - 1;
     while (1) {
         if (header->value) {
@@ -299,6 +307,21 @@ static size_t request_length(struct location *location)
     return rlen;
 }
 
+static size_t write_resource(struct uri *uri, char *p)
+{
+    char *q = p;
+    if (uri->path)
+        p += sprintf(p, "GET %s", uri->path);
+    else
+        p += sprintf(p, "GET /");
+    if (uri->query)
+        p += sprintf(p, "?%s", uri->query);
+    if (uri->fragment)
+        p += sprintf(p, "#%s", uri->fragment);
+    p += sprintf(p, " HTTP/1.1\r\n");
+    return p - q;
+}
+
 static void create_request(struct location *location)
 {
     struct headers *header = config_opts.headers;
@@ -306,11 +329,7 @@ static void create_request(struct location *location)
     location->rlen = request_length(location);
     p = malloc(location->rlen);
     location->request = p;
-    p += sprintf(p, "GET %s%s%s HTTP/1.1\r\n",
-                 location->uri->path ? location->uri->path : "/",
-                 location->uri->query ? location->uri->query : "",
-                 location->uri->fragment ? location->uri->fragment : "");
-    /* FIXME: do we add fragments to client requests? */
+    p += write_resource(location->uri, p);
     while (1) {
         if (header->value)
             p += sprintf(p, "%s: %s\r\n", header->header, header->value);

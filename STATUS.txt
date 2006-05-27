@@ -1,5 +1,5 @@
 
-             Plethora, a massive-scale HTTP client tester.
+             Plethora, a massively-scalable HTTP client testing tool.
                  (c) 2006 Codemass, Inc.
                  http://www.codemass.com/plethora/
 
@@ -14,6 +14,9 @@ Release Showstoppers
 * Per-URL average (mean) timing metrics and printed output after running
   the test.
 
+* Docuemnt typically usage, including how to deal with file-descriptor
+  limits and other OS-limitations (eg. Mac OS X).
+
 Known Bugs
 ----------
 
@@ -21,6 +24,9 @@ Known Bugs
   which looks like "Can't assign requested address". We should either
   provide instructions for increasing system limits or we should retry
   for a short period of time until the problem resolves itself.
+
+* Doesn't work on Mac OS X/Darwin due to bug in kqueue that doesn't handle
+  non-blocking connect() calls.
 
 * Libevent has a devpoll error, here's the patch to fix it (apply to
   libevent-1.1a):
@@ -41,7 +47,7 @@ Known Bugs
 Wishlist
 --------
 
-* Allow setting of buffer sizes.
+* Allow setting of buffer sizes at runtime.
 
 * Add support for delays at various points in the request/response
   state to allow for higher concurrency testing without overloading

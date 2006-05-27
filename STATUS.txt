@@ -41,6 +41,14 @@ Known Bugs
 Wishlist
 --------
 
+* Allow setting of buffer sizes.
+
+* Add support for delays at various points in the request/response
+  state to allow for higher concurrency testing without overloading
+  the client or server CPUs or network unnecessarily.
+
+* Keep track of max simultaneously connected sockets.
+
 * Per-URL min/max timing metrics and printed output.
 
 * Global min/max timing metrics.
@@ -59,4 +67,16 @@ Release 0.0.1:
 
 * Fixed a parsing bug that caused URI string corruption due to missing
   space for null characters at the end of strings.
+
+* Improve body read draining by allowing up to 128k sized reads. With
+  new TCP/IP stacks that dynamically size the socket buffers, it's
+  very likely that this will be used often.
+
+* Allow up to 8k in the receive header line, fail if larger.
+
+* Only use one static buffer for draining the response body, instead
+  of allocating for every call to process_reading_body(). This isn't
+  really that much more efficient, except for maybe some cache hits
+  in the kernel's read() implementation, and may be changed back
+  if I start doing body-based validation later.
 

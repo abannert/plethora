@@ -1,15 +1,25 @@
-#ifdef _POSIX_SOURCE
-#define HAD_POSIX_SOURCE
-#undef _POSIX_SOURCE
-#endif
-#ifndef _BSD_SOURCE
-#define HAD_NO_BSD_SOURCE
-#define _BSD_SOURCE
-#endif
-
 #include <stdio.h>
 #include <errno.h>
 #include <time.h>
+
+#define timer_add(tv1, tv2, out) \
+    do { \
+        (out)->tv_sec = (tv1)->tv_sec + (tv2)->tv_sec; \
+        (out)->tv_usec = (tv1)->tv_usec + (tv2)->tv_usec; \
+        if ((out)->tv_usec >= 1000000) { \
+            (out)->tv_sec++; \
+            (out)->tv_usec -= 1000000; \
+        } \
+    } while (0)
+#define timer_sub(tv1, tv2, out) \
+    do { \
+        (out)->tv_sec = (tv1)->tv_sec - (tv2)->tv_sec; \
+        (out)->tv_usec = (tv1)->tv_usec - (tv2)->tv_usec; \
+        if ((out)->tv_usec < 0) { \
+          (out)->tv_sec--; \
+          (out)->tv_usec += 1000000; \
+        } \
+    } while (0)
 
 #include "params.h"
 #include "metrics.h"
@@ -43,7 +53,7 @@ void print_global_timing_metrics()
 {
     struct timeval diff;
     double elapsed;
-    timersub(&global_end_tv, &global_start_tv, &diff);
+    timer_sub(&global_end_tv, &global_start_tv, &diff);
     elapsed = (diff.tv_sec * 1000000.0) + diff.tv_usec;
     if (elapsed < 1000.0)
         printf("Total time elapsed: %.3lfus\n", elapsed);
@@ -79,10 +89,10 @@ int measure(enum metric_type type, struct metrics *metrics)
 
 void metrics_accumulate(struct metrics *main, struct metrics *accumulate)
 {
-    timeradd(&main->connect, &accumulate->connect, &main->connect);
-    timeradd(&main->write, &accumulate->write, &main->write);
-    timeradd(&main->read, &accumulate->read, &main->read);
-    timeradd(&main->close, &accumulate->close, &main->close);
+    timer_add(&main->connect, &accumulate->connect, &main->connect);
+    timer_add(&main->write, &accumulate->write, &main->write);
+    timer_add(&main->read, &accumulate->read, &main->read);
+    timer_add(&main->close, &accumulate->close, &main->close);
     main->total_measurements++;
 }
 

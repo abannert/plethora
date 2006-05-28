@@ -1,6 +1,6 @@
 #AC_PREREQ(2.59)
 #AC_COPYRIGHT([Copyright (C) 2004])
-AC_REVISION($Revision: 1.2 $)
+AC_REVISION($Revision: 1.3 $)
 AC_INIT([plethora], [0.1], [aaron-plethora@codemass.com])
 
 AC_CONFIG_SRCDIR([plethora.c])
@@ -35,7 +35,7 @@ AC_TYPE_SIZE_T
 AC_FUNC_FORK
 #AC_FUNC_MALLOC
 AC_FUNC_MEMCMP
-AC_FUNC_REALLOC
+#AC_FUNC_REALLOC
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([socketpair memset socket strdup strerror])
 

@@ -11,9 +11,6 @@ Releases
 Release Showstoppers
 --------------------
 
-* Per-URL average (mean) timing metrics and printed output after running
-  the test.
-
 * Docuemnt typically usage, including how to deal with file-descriptor
   limits and other OS-limitations (eg. Mac OS X).
 
@@ -53,12 +50,6 @@ Wishlist
   state to allow for higher concurrency testing without overloading
   the client or server CPUs or network unnecessarily.
 
-* Keep track of max simultaneously connected sockets.
-
-* Per-URL min/max timing metrics and printed output.
-
-* Global min/max timing metrics.
-
 Done
 ----
 
@@ -85,4 +76,13 @@ Release 0.0.1:
   really that much more efficient, except for maybe some cache hits
   in the kernel's read() implementation, and may be changed back
   if I start doing body-based validation later.
+
+* Per-URL average (mean) timing metrics and printed output after running
+  the test.
+
+* Keep track of max simultaneously connected sockets.
+
+* Per-URL min/max timing metrics and printed output.
+
+* Global min/max timing metrics.
 

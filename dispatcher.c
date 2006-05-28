@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,11 +29,15 @@ struct connection {
     unsigned int resp_code; /* response code */
     const char *resp_str; /* response string */
     struct metrics metrics; /* metrics for this request */
+    int connected; /* set to 1 when connected, 0 otherwise */
 };
 
-static struct metrics global_metrics;
+static struct accumulator global_accumulator;
 
 static int n_dispatched = 0;
+static int n_concurrent = 0;
+static int max_concurrent = 0;
+static ssize_t total_bytes_received = 0;
 
 static struct timeval tvnow = { 0, 0 };
 
@@ -55,6 +58,9 @@ void process_error(struct connection *conn)
 
 void process_cleanup(struct connection *conn)
 {
+    total_bytes_received += conn->responselen;
+    n_concurrent -= conn->connected; // only reduce concurrency if we were
+                                     // connected in the first place
     memset(conn, 0, sizeof(*conn)); // clear the memory
     process_state(conn); // process the new idle state
 }
@@ -62,12 +68,25 @@ void process_cleanup(struct connection *conn)
 void process_calculating(struct connection *conn)
 {
     /* add metrics from this run to this location's total */
-    metrics_accumulate(&conn->location->total_metrics, &conn->metrics);
+    accumulate_metrics(&conn->location->accumulator, &conn->metrics);
 
     /* add metrics from this run to global total */
-    metrics_accumulate(&global_metrics, &conn->metrics);
+    accumulate_metrics(&global_accumulator, &conn->metrics);
 
     conn->state = ST_CLEANUP;
+    process_state(conn);
+}
+
+void process_closed(struct connection *conn)
+{
+    int rv = measure(ME_CLOSE, &conn->metrics);
+    int e = errno;
+    if (rv < 0) {
+        conn->error = e;
+        conn->state = ST_ERROR;
+    } else {
+        conn->state = ST_CALCULATING;
+    }
     process_state(conn);
 }
 
@@ -82,6 +101,19 @@ void process_closing(struct connection *conn)
                     conn->socket, strerror(conn->error));
     } else {
         conn->state = ST_CLOSED;
+    }
+    process_state(conn);
+}
+
+void process_read(struct connection *conn)
+{
+    int rv = measure(ME_READ, &conn->metrics);
+    int e = errno;
+    if (rv < 0) {
+        conn->error = e;
+        conn->state = ST_ERROR;
+    } else {
+        conn->state = ST_CLOSING;
     }
     process_state(conn);
 }
@@ -191,6 +223,14 @@ out:
 
 void process_written(struct connection *conn)
 {
+    int rv = measure(ME_WRITE, &conn->metrics);
+    int e = errno;
+    if (rv < 0) {
+        conn->error = e;
+        conn->state = ST_ERROR;
+        goto out;
+    }
+
     if (shutdown(conn->socket, SHUT_WR) < 0) {
         conn->error = errno;
         conn->state = ST_ERROR;
@@ -199,6 +239,8 @@ void process_written(struct connection *conn)
     } else {
         conn->state = ST_READING_HEADER;
     }
+
+out:
     process_state(conn);
 }
 
@@ -250,6 +292,22 @@ retry_write:
     }
 
 out:
+    process_state(conn);
+}
+
+void process_connected(struct connection *conn)
+{
+    int rv = measure(ME_CONNECT, &conn->metrics);
+    int e = errno;
+    if (rv < 0) {
+        conn->error = e;
+        conn->state = ST_ERROR;
+    } else {
+        conn->state = ST_WRITING;
+    }
+    n_concurrent += ++conn->connected;
+    if (n_concurrent > max_concurrent)
+        max_concurrent = n_concurrent;
     process_state(conn);
 }
 
@@ -317,8 +375,17 @@ void process_idle(int fd, short event, void *_conn)
     /* save the socket for later */
     conn->socket = fd;
 
-    /* connect to the socket */
+    /* fetch the next location to connect to */
     conn->location = get_next_location();
+
+    /* start the counter for this connection */
+    rv = measure(ME_EPOCH, &conn->metrics);
+    if (rv < 0) {
+        perror("measure (gettimeofday()) failed");
+        exit(-4);
+    }
+
+    /* connect to the socket */
     rv = location_connect(conn->location, fd);
     if (rv < 0) {
         perror("connect_next failed");
@@ -387,7 +454,8 @@ static void process_state(struct connection *conn)
                        conn, NULL);
             break;
         case ST_CONNECTED:
-            // fall through to the next state
+            process_connected(conn);
+            break;
         case ST_WRITING:
             event_once(conn->socket, EV_WRITE, process_writing, conn, NULL);
             break;
@@ -401,12 +469,14 @@ static void process_state(struct connection *conn)
             event_once(conn->socket, EV_READ, process_reading_body, conn, NULL);
             break;
         case ST_READ:
-            // fall through to the next state
+            process_read(conn);
+            break;
         case ST_CLOSING:
             process_closing(conn);
             break;
         case ST_CLOSED:
-            // fall through to the next state
+            process_closed(conn);
+            break;
         case ST_CALCULATING:
             process_calculating(conn);
             break;
@@ -441,5 +511,40 @@ void initialize_dispatcher()
     /* process initial connections */
     for (i = 0; i < config_opts.concurrency; i++)
         process_state(&connections[i]);
+
+    i = start_accumulator(&global_accumulator);
+    if (i < 0) {
+        perror("start_accumulator (gettimeofday)");
+        exit(-2);
+    }
+}
+
+static int format_bytes(char *buf, size_t len, size_t _bytes)
+{
+    double bytes = (double)_bytes;
+    if (bytes < 1024)
+        return snprintf(buf, len, "%.3fB", bytes);
+    bytes /= 1024;
+    if (bytes < 1024)
+        return snprintf(buf, len, "%.3fKB", bytes);
+    bytes /= 1024;
+    if (bytes < 1024)
+        return snprintf(buf, len, "%.3fMB", bytes);
+    bytes /= 1024;
+    return snprintf(buf, len, "%.3fGB", bytes);
+}
+
+int dispatcher_display(FILE *stream)
+{
+    char buf[BUFSIZ];
+    int ret = 0;
+    (void)stop_accumulator(&global_accumulator);
+    ret += fprintf(stream, "--- TOTALS:\n");
+    ret += print_accumulator(stream, &global_accumulator);
+    (void)format_bytes(buf, sizeof(buf), total_bytes_received);
+    ret += fprintf(stream, "    Max Concurrency: %d,"
+                   " Total Data Received: %s\n",
+                   max_concurrent, buf);
+    return ret;
 }
 

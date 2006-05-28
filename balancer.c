@@ -360,6 +360,7 @@ static void set_locations(struct urls *urls)
     int i;
     for (i = 0; i < n_locations; i++) {
         struct hostent *hostent;
+        locations[i].uristr = urls->url;
         locations[i].uri = parse_uri(urls->url);
         if (locations[i].uri == NULL) {
             fprintf(stderr, "error parsing URI: %s, failing\n", urls->url);
@@ -388,6 +389,13 @@ static void set_locations(struct urls *urls)
         }
         create_request(&locations[i]);
         urls = urls->next;
+    }
+    for (i = 0; i < n_locations; i++) {
+        int rv = start_accumulator(&locations[i].accumulator);
+        if (rv < 0) {
+            perror("start_accumulator (gettimeofday()) from set_locations");
+            exit(-3);
+        }
     }
 }
 
@@ -434,3 +442,19 @@ retry_connect:
     location->n_connects++;
     return 0;
 }
+
+int balancer_display(FILE *stream)
+{
+    int i, ret = 0;
+    for (i = 0; i < n_locations; i++)
+        (void)stop_accumulator(&locations[i].accumulator);
+    for (i = 0; i < n_locations; i++) {
+        ret += fprintf(stream, "Statistics for URL %d: %s\n", i + 1, locations[i].uristr);
+        if (n_locations == 1)
+            return ret;
+        ret += print_accumulator(stream, &locations[i].accumulator);
+        ret += fprintf(stream, "\n");
+    }
+    return ret;
+}
+

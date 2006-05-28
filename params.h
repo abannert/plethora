@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "ring.h"
 
 #define MAX_CONNECT_ERRORS 10

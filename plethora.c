@@ -26,29 +26,17 @@ int main(int argc, char *argv[])
         print_config_opts(stdout);
 
     initialize_balancer();
-
     initialize_dispatcher();
 
-    rc = start_global_timer();
-    if (rc < 0) {
-        perror("start_global_time, from gettimeofday");
-        exit(-1);
-    }
-
-    /* don't make any connections before here */
+    /* it doesn't make any connections before this call */
     rc = event_dispatch();
     if (rc < 0)
         perror("event_dispatch");
     else if (config_opts.verbose > 2)
         printf("done\n");
 
-    rc = end_global_timer();
-    if (rc < 0) {
-        perror("start_global_time, from gettimeofday");
-        exit(-1);
-    }
-
-    print_global_timing_metrics();
+    balancer_display(stdout);
+    dispatcher_display(stdout);
 
     return 0;
 }

@@ -17,11 +17,19 @@ struct metrics {
     struct timeval write;   /* time when request write completed */
     struct timeval read;    /* time when response read completed */
     struct timeval close;   /* time when close completed */
+};
+
+struct accumulator {
+    struct timeval start;   /* time when test was started */
+    struct timeval stop;    /* time when test was completed */
+    struct metrics total;
+    struct metrics min;
+    struct metrics max;
     int total_measurements;
 };
 
-int start_global_timer();
-int end_global_timer();
+int start_accumulator(struct accumulator *acc);
+int stop_accumulator(struct accumulator *acc);
 
 /**
  * Take a timer measurement.
@@ -30,10 +38,12 @@ int end_global_timer();
 int measure(enum metric_type type, struct metrics *metrics);
 
 /**
- * Add one metrics structure to another.
+ * Add the metrics to the accumulator.
  */
-void metrics_accumulate(struct metrics *main, struct metrics *accumulate);
+void accumulate_metrics(struct accumulator *acc, struct metrics *metrics);
 
-void print_global_timing_metrics();
+int print_accumulator(FILE *stream, struct accumulator *acc);
+
+int print_metrics(FILE *stream, struct metrics *metrics);
 
 #endif /* __metrics_h */

@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 enum state {
     ST_IDLE = 0,
     ST_CONNECTING,
@@ -18,3 +20,6 @@ enum state {
 struct connection;
 
 void initialize_dispatcher();
+
+int dispatcher_display(FILE *stream);
+

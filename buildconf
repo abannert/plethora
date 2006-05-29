@@ -6,6 +6,19 @@ srcdir=`pwd`
 
 test -d ${srcdir}/autom4te.cache && rm -rf ${srcdir}/autom4te.cache
 
-autoheader
-autoconf
+AUTOHEADER=`which autoheader`
+test -z $AUTOHEADER && AUTOHEADER=`which autoheader259`
+test -z $AUTOHEADER && AUTOHEADER=`which autoheader253`
+test -z $AUTOHEADER && AUTOHEADER=`which autoheader213`
+test -z $AUTOHEADER && echo "Can't find autoconf" && exit 1
+echo Running $AUTOHEADER
+`$AUTOHEADER`
+
+AUTOCONF=`which autoconf`
+test -z $AUTOCONF && AUTOCONF=`which autoconf259`
+test -z $AUTOCONF && AUTOCONF=`which autoconf253`
+test -z $AUTOCONF && AUTOCONF=`which autoconf213`
+test -z $AUTOCONF && echo "Can't find autoconf" && exit 1
+echo Running $AUTOCONF
+`$AUTOCONF`
 

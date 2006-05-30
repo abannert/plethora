@@ -20,7 +20,7 @@ bindir = @bindir@
 
 TEST_TARGETS = 
 EXEC_TARGETS = plethora
-TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS}
+TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS} .deps
 OBJECTS = plethora.o params.o dispatcher.o balancer.o metrics.o
 TRANSIENTS = 
 
@@ -38,9 +38,8 @@ install:
 		${INSTALL_PROGRAM} $${file} ${bindir}; \
 	done
 
-#.deps dep deps depend: *.h *.c
-.deps dep deps depend:
-	gcc -M $(CFLAGS) $(CPPFLAGS) *.h *.c > .deps
+.deps dep deps depend: *.h *.c Makefile
+	gcc -MM $(CFLAGS) $(CPPFLAGS) *.h *.c > .deps
 
 clean:
 	rm -f $(TARGETS) $(OBJECTS) $(TRANSIENTS)

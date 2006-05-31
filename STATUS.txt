@@ -11,8 +11,17 @@ Releases
 Release Showstoppers
 --------------------
 
+* When headers are added (or added with a blank value) they should over-
+  ride (or disable) a pre-existing header value for the same header.
+  - Perhaps allow multiple Cookie headers, to support this spec violation?
+
 * Docuemnt typically usage, including how to deal with file-descriptor
   limits and other OS-limitations (eg. Mac OS X).
+
+* Optionally allow the client to continue trying to connect even upon
+  connect failure, if there have been successful connects already. This
+  will let us maintain load on a server instead of suddenly stopping the
+  test.
 
 Known Bugs
 ----------

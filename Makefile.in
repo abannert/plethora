@@ -20,7 +20,7 @@ bindir = @bindir@
 
 TEST_TARGETS = 
 EXEC_TARGETS = plethora
-TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS} .deps
+TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS}
 OBJECTS = plethora.o params.o dispatcher.o balancer.o metrics.o
 TRANSIENTS = 
 

@@ -4,6 +4,8 @@
 #include <time.h>
 #include <limits.h>
 
+#include "formats.h"
+
 #define timer_cmp(tv1, comparator, tv2) \
     (tv1)->tv_sec == (tv2)->tv_sec ? \
     (tv1)->tv_usec comparator (tv2)->tv_usec : \
@@ -68,7 +70,11 @@ int start_accumulator(struct accumulator *acc)
 int stop_accumulator(struct accumulator *acc)
 {
     struct timezone tz; /* ignored */
-    return gettimeofday(&acc->stop, &tz);
+    int ret = gettimeofday(&acc->stop, &tz);
+    if (ret < 0)
+        return ret;
+    timer_sub(&acc->stop, &acc->start, &acc->tdiff); // calc the tdiff
+    return ret;
 }
 
 void accumulate_metrics(struct accumulator *acc, struct metrics *metrics)
@@ -133,18 +139,6 @@ static int print_elapsed(char *buf, size_t len,
     }
 }
 
-int format_double_timer(char *buf, size_t len, double d)
-{
-    // start out with us
-    if (d < 1000.0)
-        return snprintf(buf, len, "%6.2lfus", d);
-    d /= 1000.0; // change to ms
-    if (d < 1000.0)
-        return snprintf(buf, len, "%6.2lfms", d);
-    d /= 1000.0; // change to seconds
-    return snprintf(buf, len, "%6.2lfs", d);
-}
-
 #define PRINT_STATS(stream, acc, WHICH) \
     (void)format_double_timer(mean, sizeof(mean), \
                               ((acc->total.WHICH.tv_sec * 1000000.0) \
@@ -169,7 +163,6 @@ int format_double_timer(char *buf, size_t len, double d)
 int print_accumulator(FILE *stream, struct accumulator *acc)
 {
     int i = 0;
-    struct timeval tdiff;
     char mean[BUFSIZ], min[BUFSIZ], max[BUFSIZ], total[BUFSIZ];
     // print the connect metrics, mode, max/min
     i += fprintf(stream, " Metrics:  type\t\t mean\t\t   min/max\t\t total\n");
@@ -177,13 +170,13 @@ int print_accumulator(FILE *stream, struct accumulator *acc)
     PRINT_STATS(stream, acc, write);
     PRINT_STATS(stream, acc, read);
     PRINT_STATS(stream, acc, close);
-    timer_sub(&acc->stop, &acc->start, &tdiff);
     (void)format_double_timer(total, sizeof(total),
-                              tdiff.tv_sec * 1000000.0 + tdiff.tv_usec);
+                              acc->tdiff.tv_sec * 1000000.0
+                              + acc->tdiff.tv_usec);
     i += fprintf(stream, " %d requests total in %s, %.3lf Requests/Second\n",
                  acc->total_measurements, total,
                  ((double)acc->total_measurements
-                  / (tdiff.tv_sec + (tdiff.tv_usec / 1000000.0))));
+                  / (acc->tdiff.tv_sec + (acc->tdiff.tv_usec / 1000000.0))));
     return i;
 }
 

@@ -22,6 +22,8 @@ struct metrics {
 struct accumulator {
     struct timeval start;   /* time when test was started */
     struct timeval stop;    /* time when test was completed */
+    struct timeval tdiff;   /* timeval diff between stop and start
+                             * (only valid after accumulator is stopped) */
     struct metrics total;
     struct metrics min;
     struct metrics max;

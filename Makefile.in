@@ -21,13 +21,13 @@ bindir = @bindir@
 TEST_TARGETS = 
 EXEC_TARGETS = plethora
 TARGETS = ${TEST_TARGETS} ${EXEC_TARGETS}
-OBJECTS = plethora.o params.o dispatcher.o balancer.o metrics.o
+OBJECTS = plethora.o params.o dispatcher.o balancer.o metrics.o formats.o
 TRANSIENTS = 
 
 all: $(TARGETS)
 
-plethora: plethora.o params.o dispatcher.o balancer.o metrics.o
-	$(CC) $(LDFLAGS) plethora.o params.o dispatcher.o balancer.o metrics.o $(LIBS) -o $@
+plethora: plethora.o params.o dispatcher.o balancer.o metrics.o formats.o
+	$(CC) $(LDFLAGS) plethora.o params.o dispatcher.o balancer.o metrics.o formats.o $(LIBS) -o $@
 
 #testrequest: testrequest.o request.o aliasdb.o urlcheck.o
 #	$(CC) $(LDFLAGS) testrequest.o request.o aliasdb.o urlcheck.o $(LIBS) -o $@

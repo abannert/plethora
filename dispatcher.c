@@ -12,6 +12,7 @@
 #include "dispatcher.h"
 #include "balancer.h"
 #include "metrics.h"
+#include "formats.h"
 
 #define MAX_HEADER (4096)
 #define BODY_BUFSIZ (131072)
@@ -520,32 +521,20 @@ void initialize_dispatcher()
     }
 }
 
-static int format_bytes(char *buf, size_t len, size_t _bytes)
-{
-    double bytes = (double)_bytes;
-    if (bytes < 1024)
-        return snprintf(buf, len, "%.3fB", bytes);
-    bytes /= 1024;
-    if (bytes < 1024)
-        return snprintf(buf, len, "%.3fKB", bytes);
-    bytes /= 1024;
-    if (bytes < 1024)
-        return snprintf(buf, len, "%.3fMB", bytes);
-    bytes /= 1024;
-    return snprintf(buf, len, "%.3fGB", bytes);
-}
-
 int dispatcher_display(FILE *stream)
 {
-    char buf[BUFSIZ];
+    char buf[BUFSIZ], buf2[BUFSIZ];
     int ret = 0;
     (void)stop_accumulator(&global_accumulator);
     ret += fprintf(stream, "--- TOTALS:\n");
     ret += print_accumulator(stream, &global_accumulator);
     (void)format_bytes(buf, sizeof(buf), total_bytes_received);
+    (void)format_double_bytes(buf2, sizeof(buf2), (double)total_bytes_received
+                       / (global_accumulator.tdiff.tv_sec
+                          + (global_accumulator.tdiff.tv_usec / 1000000.0)));
     ret += fprintf(stream, "    Max Concurrency: %d,"
-                   " Total Data Received: %s\n",
-                   max_concurrent, buf);
+                   " Total Data Received: %s (%s/s)\n",
+                   max_concurrent, buf, buf2);
     return ret;
 }
 

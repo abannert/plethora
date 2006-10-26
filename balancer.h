@@ -1,20 +1,8 @@
+#include <stdio.h>
 #include <sys/socket.h>
 
+#include "parse_uri.h"
 #include "metrics.h"
-
-struct uri {
-    char *scheme;
-    char *hostinfo;
-    char *user;
-    char *password;
-    char *hostname;
-    char *port_str;
-    char *path;
-    char *query;
-    char *fragment;
-
-    short port;
-};
 
 struct location {
     const char *uristr;

@@ -1,6 +1,7 @@
 #ifndef __metrics_h
 #define __metrics_h
 
+#include <stdio.h>
 #include <sys/time.h>
 
 enum metric_type {

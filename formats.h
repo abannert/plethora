@@ -19,4 +19,4 @@ int format_double_bytes(char *buf, size_t buflen, double bytes);
 /**
  * Format the given bytes into pretty-printable units.
  */
-int format_bytes(char *buf, size_t buflen, size_t bytes);
+int format_bytes(char *buf, size_t buflen, unsigned long long bytes);

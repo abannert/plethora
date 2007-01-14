@@ -30,9 +30,11 @@ int format_double_bytes(char *buf, size_t buflen, double bytes)
     return snprintf(buf, buflen, "%.3fGB", bytes);
 }
 
-int format_bytes(char *buf, size_t buflen, size_t _bytes)
+int format_bytes(char *buf, size_t buflen, unsigned long long _bytes)
 {
     double bytes = (double)_bytes;
+    if (_bytes < 1024)
+        return snprintf(buf, buflen, "%dB", _bytes);
     return format_double_bytes(buf, buflen, bytes);
 }
 

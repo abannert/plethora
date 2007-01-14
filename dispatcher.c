@@ -39,7 +39,7 @@ static struct accumulator global_accumulator;
 static int n_dispatched = 0;
 static int n_concurrent = 0;
 static int max_concurrent = 0;
-static ssize_t total_bytes_received = 0;
+static unsigned long long total_bytes_received = 0;
 
 static struct timeval tvnow = { 0, 0 };
 

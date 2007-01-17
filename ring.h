@@ -1,4 +1,6 @@
-/* Copyright 2006 Codemass, Inc.
+/* $Id: ring.h,v 1.3 2007/01/17 20:55:48 aaron Exp $ */
+/* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
+ * Use is subject to license terms.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

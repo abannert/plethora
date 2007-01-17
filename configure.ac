@@ -1,6 +1,6 @@
-#AC_PREREQ(2.59)
-#AC_COPYRIGHT([Copyright (C) 2004])
-AC_REVISION($Revision: 1.3 $)
+AC_PREREQ(2.60)
+AC_COPYRIGHT([Copyright 2006-2007 Codemass, Inc.  All rights reserved.  Use is subject to the license terms.])
+AC_REVISION($Revision: 1.4 $)
 AC_INIT([plethora], [0.1], [aaron-plethora@codemass.com])
 
 AC_CONFIG_SRCDIR([plethora.c])
@@ -22,7 +22,7 @@ AC_CHECK_LIB(nsl, gethostbyname)
 AC_FUNC_ALLOCA
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-#AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h malloc.h netinet/in.h stdlib.h string.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h malloc.h netinet/in.h stdlib.h string.h sys/socket.h unistd.h sys/time.h])
 AC_CHECK_HEADERS([event.h],,
     [AC_MSG_ERROR([libevent header event.h not found, use CFLAGS])])
 
@@ -30,6 +30,7 @@ AC_CHECK_HEADERS([event.h],,
 AC_C_CONST
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
 
 # Checks for library functions.
 AC_FUNC_FORK

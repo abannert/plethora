@@ -1,6 +1,9 @@
 
              Plethora, a massively-scalable HTTP client testing tool.
-                 (c) 2006 Codemass, Inc.
+
+                 (c) 2006-2007 Codemass, Inc.  All rights reserved.
+                 Use is subject to the license terms.
+
                  http://www.codemass.com/plethora/
 
 Releases
@@ -16,12 +19,15 @@ Release Showstoppers
   - Perhaps allow multiple Cookie headers, to support this spec violation?
 
 * Docuemnt typically usage, including how to deal with file-descriptor
-  limits and other OS-limitations (eg. Mac OS X).
+  limits and other OS-limitations (eg. Mac OS X). (man page?)
 
 * Optionally allow the client to continue trying to connect even upon
   connect failure, if there have been successful connects already. This
   will let us maintain load on a server instead of suddenly stopping the
   test.
+
+* Fix a bug where we don't actually do non-blocking connects because we
+  don't properly detect the EINPROGRESS error from connect().
 
 Known Bugs
 ----------
@@ -32,10 +38,10 @@ Known Bugs
   for a short period of time until the problem resolves itself.
 
 * Doesn't work on Mac OS X/Darwin due to bug in kqueue that doesn't handle
-  non-blocking connect() calls.
+  non-blocking connect() calls. (Requires disabling kqueue by setting an
+  environment variable that is picked up by libevent.)
 
-* Libevent has a devpoll error, here's the patch to fix it (apply to
-  libevent-1.1a):
+* Libevent-1.1a has a devpoll bug, here's the patch to fix it:
 
 --- devpoll.c.orig    Sat May 27 15:33:51 2006
 +++ devpoll.c   Sat May 27 14:50:08 2006
@@ -94,4 +100,10 @@ Release 0.0.1:
 * Per-URL min/max timing metrics and printed output.
 
 * Global min/max timing metrics.
+
+* Split out the parse_uri routine into its own module (for separate
+  licensing).
+
+* Added LICENSE and Copyright notices to most files in preparation
+  for first distribution.
 

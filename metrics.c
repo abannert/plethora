@@ -1,3 +1,27 @@
+/* $Id: metrics.c,v 1.5 2007/01/17 20:54:24 aaron Exp $ */
+/* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @file metrics.c
+ * @brief Implementations of various metric arithmetic and accumulation
+ *        routines and printing routines.
+ * @author Aaron Bannert (aaron@codemass.com)
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -5,31 +29,6 @@
 #include <limits.h>
 
 #include "formats.h"
-
-#define timer_cmp(tv1, comparator, tv2) \
-    (tv1)->tv_sec == (tv2)->tv_sec ? \
-    (tv1)->tv_usec comparator (tv2)->tv_usec : \
-    (tv1)->tv_sec comparator (tv2)->tv_sec
-
-#define timer_add(tv1, tv2, out) \
-    do { \
-        (out)->tv_sec = (tv1)->tv_sec + (tv2)->tv_sec; \
-        (out)->tv_usec = (tv1)->tv_usec + (tv2)->tv_usec; \
-        if ((out)->tv_usec >= 1000000) { \
-            (out)->tv_sec++; \
-            (out)->tv_usec -= 1000000; \
-        } \
-    } while (0)
-#define timer_sub(tv1, tv2, out) \
-    do { \
-        (out)->tv_sec = (tv1)->tv_sec - (tv2)->tv_sec; \
-        (out)->tv_usec = (tv1)->tv_usec - (tv2)->tv_usec; \
-        if ((out)->tv_usec < 0) { \
-          (out)->tv_sec--; \
-          (out)->tv_usec += 1000000; \
-        } \
-    } while (0)
-
 #include "params.h"
 #include "metrics.h"
 
@@ -73,7 +72,7 @@ int stop_accumulator(struct accumulator *acc)
     int ret = gettimeofday(&acc->stop, &tz);
     if (ret < 0)
         return ret;
-    timer_sub(&acc->stop, &acc->start, &acc->tdiff); // calc the tdiff
+    timersub(&acc->stop, &acc->start, &acc->tdiff); // calc the tdiff
     return ret;
 }
 
@@ -85,36 +84,36 @@ void accumulate_metrics(struct accumulator *acc, struct metrics *metrics)
     acc->total_measurements++;
 
     // calculate diff from epoch
-    timer_sub(&metrics->connect, &metrics->epoch, &mdiff.connect);
-    timer_sub(&metrics->write, &metrics->epoch, &mdiff.write);
-    timer_sub(&metrics->read, &metrics->epoch, &mdiff.read);
-    timer_sub(&metrics->close, &metrics->epoch, &mdiff.close);
+    timersub(&metrics->connect, &metrics->epoch, &mdiff.connect);
+    timersub(&metrics->write, &metrics->epoch, &mdiff.write);
+    timersub(&metrics->read, &metrics->epoch, &mdiff.read);
+    timersub(&metrics->close, &metrics->epoch, &mdiff.close);
 
     // add diff to total
-    timer_add(&acc->total.connect, &mdiff.connect, &acc->total.connect);
-    timer_add(&acc->total.write, &mdiff.write, &acc->total.write);
-    timer_add(&acc->total.read, &mdiff.read, &acc->total.read);
-    timer_add(&acc->total.close, &mdiff.close, &acc->total.close);
+    timeradd(&acc->total.connect, &mdiff.connect, &acc->total.connect);
+    timeradd(&acc->total.write, &mdiff.write, &acc->total.write);
+    timeradd(&acc->total.read, &mdiff.read, &acc->total.read);
+    timeradd(&acc->total.close, &mdiff.close, &acc->total.close);
 
     // set MINs and MAXs
-    if (timer_cmp(&mdiff.connect, <, &acc->min.connect)) {
+    if (timercmp(&mdiff.connect, <, &acc->min.connect)) {
         acc->min.connect = mdiff.connect;
-    } else if (timer_cmp(&mdiff.connect, >, &acc->max.connect)) {
+    } else if (timercmp(&mdiff.connect, >, &acc->max.connect)) {
         acc->max.connect = mdiff.connect;
     }
-    if (timer_cmp(&mdiff.write, <, &acc->min.write)) {
+    if (timercmp(&mdiff.write, <, &acc->min.write)) {
         acc->min.write = mdiff.write;
-    } else if (timer_cmp(&mdiff.write, >, &acc->max.write)) {
+    } else if (timercmp(&mdiff.write, >, &acc->max.write)) {
         acc->max.write = mdiff.write;
     }
-    if (timer_cmp(&mdiff.read, <, &acc->min.read)) {
+    if (timercmp(&mdiff.read, <, &acc->min.read)) {
         acc->min.read = mdiff.read;
-    } else if (timer_cmp(&mdiff.read, >, &acc->max.read)) {
+    } else if (timercmp(&mdiff.read, >, &acc->max.read)) {
         acc->max.read = mdiff.read;
     }
-    if (timer_cmp(&mdiff.close, <, &acc->min.close)) {
+    if (timercmp(&mdiff.close, <, &acc->min.close)) {
         acc->min.close = mdiff.close;
-    } else if (timer_cmp(&mdiff.close, >, &acc->max.close)) {
+    } else if (timercmp(&mdiff.close, >, &acc->max.close)) {
         acc->max.close = mdiff.close;
     }
 }
@@ -124,7 +123,7 @@ static int print_elapsed(char *buf, size_t len,
 {
     struct timeval diff;
     double elapsed;
-    timer_sub(end, start, &diff);
+    timersub(end, start, &diff);
     elapsed = (diff.tv_sec * 1000000.0) + diff.tv_usec;
     if (elapsed < 1000.0)
         return snprintf(buf, len, "%.3lfus\n", elapsed);
@@ -182,14 +181,6 @@ int print_accumulator(FILE *stream, struct accumulator *acc)
 
 int print_metrics(FILE *stream, struct metrics *metrics)
 {
+    /* FIXME: implement this */
     return 0;
 }
-
-#ifdef HAD_NO_BSD_SOURCE
-#undef HAD_NO_BSD_SOURCE
-#undef _BSD_SOURCE
-#endif
-#ifdef HAD_POSIX_SOURCE
-#define _POSIX_SOURCE
-#undef HAD_POSIX_SOURCE
-#endif

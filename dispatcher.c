@@ -1,3 +1,27 @@
+/* $Id: dispatcher.c,v 1.8 2007/01/17 20:52:38 aaron Exp $ */
+/* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
+ * Use is subject to license terms.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @file dispatcher.c
+ * @brief The Dispatcher is responsible for distributing URLs across available
+ *        connections.
+ * @author Aaron Bannert (aaron@codemass.com)
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -140,6 +164,17 @@ retry:
                 fprintf(stderr, "read(%d) received EAGAIN, sleeping\n", fd);
             goto out;
         }
+        // FIXME: what about standard read failures?
+#if 0
+        else {
+            if (config_opts.verbose > 0)
+                fprintf(stderr, "read(%d) received error %s, failing\n", fd,
+                        strerror(e));
+            conn->error = e;
+            conn->state = ST_ERROR;
+            goto out;
+        }
+#endif
     } else if (count == 0) { // EOF
         conn->state = ST_READ;
         if (config_opts.verbose > 4)
@@ -176,6 +211,17 @@ retry:
                 fprintf(stderr, "read(%d) received EAGAIN, sleeping\n", fd);
             goto out;
         }
+        // FIXME: what about standard read failures?
+#if 0
+        else {
+            if (config_opts.verbose > 0)
+                fprintf(stderr, "read(%d) received error %s, failing\n", fd,
+                        strerror(e));
+            conn->error = e;
+            conn->state = ST_ERROR;
+            goto out;
+        }
+#endif
     } else if (count == 0) { // EOF
         // error, because we didn't find the \r\n on a previous call
         if (config_opts.verbose > 0)

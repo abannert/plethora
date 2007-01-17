@@ -9,3 +9,4 @@ config.status
 configure
 plethora
 *.swp
+cscope.out

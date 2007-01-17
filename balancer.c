@@ -1,5 +1,6 @@
-/**
- * Copyright 2006 Codemass, Inc.
+/* $Id: balancer.c,v 1.8 2007/01/17 02:15:50 aaron Exp $ */
+/* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
+ * Use is subject to license terms.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,9 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Parts of this were taken from Apache 2.0.
- * THIS MUST BE ELABORATED UPON BEFORE DISTRIBUTION OF ANY KIND.
+ */
+
+/**
+ * @file balancer.c
+ * @brief The Balancer is responsible for managing and establishing
+ *        connections to all URL destinations.
+ * @author Aaron Bannert (aaron@codemass.com)
  */
 
 #include <stdio.h>

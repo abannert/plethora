@@ -9,7 +9,7 @@
 Releases
 --------
 
-  0.0.1      - In Development
+  0.0.1      - Tagged and Released on 12-Feb-2007
 
 Release Showstoppers
 --------------------
@@ -107,3 +107,4 @@ Release 0.0.1:
 * Added LICENSE and Copyright notices to most files in preparation
   for first distribution.
 
+* Added build/roll.sh to automate rolling of tarballs.

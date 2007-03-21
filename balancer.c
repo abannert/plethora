@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.8 2007/01/17 02:15:50 aaron Exp $ */
+/* $Id: balancer.c,v 1.9 2007/03/21 16:28:03 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -202,14 +202,25 @@ retry_connect:
         fprintf(stderr, "connect()ing to socket %d\n", sock);
     rc = connect(sock, location->name, location->namelen);
     e = errno;
-    if (rc < 0 && e != EINPROGRESS) {
-        if (config_opts.verbose > 2)
-            perror("connect");
-        location->n_errors++;
-        goto retry_connect;
+    if (rc < 0) {
+        switch (e) {
+        case EINTR:
+            goto retry_connect;
+        case ECONNREFUSED:
+        case ENETUNREACH:
+            if (config_opts.verbose > 2)
+                perror("connect");
+            location->n_errors++;
+            goto retry_connect;
+        case EAGAIN: // local port exhaustion on Linux
+        case EADDRNOTAVAIL: // local port exhaustion on Solaris
+        case EINPROGRESS: // non-blocking socket still connecting (good error)
+        default:
+            break;
+        };
     }
     location->n_connects++;
-    return 0;
+    return rc;
 }
 
 int balancer_display(FILE *stream)

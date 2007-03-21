@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.8 2007/01/17 20:52:38 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.9 2007/03/21 16:28:03 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -98,6 +98,9 @@ void process_calculating(struct connection *conn)
 
     /* add metrics from this run to global total */
     accumulate_metrics(&global_accumulator, &conn->metrics);
+
+    if (config_opts.verbose > 0)
+        print_metrics(stdout, &conn->metrics);
 
     conn->state = ST_CLEANUP;
     process_state(conn);
@@ -389,11 +392,13 @@ out:
     process_state(conn);
 }
 
+static struct timeval tv30sec = { 30, 0 };
+
 void process_idle(int fd, short event, void *_conn)
     /* input fd is ignored */
 {
     struct connection *conn = (struct connection *)_conn;
-    int flags, rv;
+    int flags, rv, e;
 
     if (n_dispatched >= config_opts.count) {
         if (config_opts.verbose > 1)
@@ -435,18 +440,31 @@ void process_idle(int fd, short event, void *_conn)
 
     /* connect to the socket */
     rv = location_connect(conn->location, fd);
-    if (rv < 0) {
-        perror("connect_next failed");
-        exit(-3);
-    } else if (rv == 0) {
+    e = errno;
+    if (rv == 0) {
         /* we were able to complete the connect immediately, no waiting */
         conn->state = ST_CONNECTED;
-    } else {
-        /* we weren't able to complete the connect immediately, check later */
+    } else if (rv < 0 && e == EINPROGRESS) {
+        /* we weren't able to complete the connect immediately,
+           check later */
         conn->state = ST_CONNECTING;
+    } else if (rv < 0 && (e == EAGAIN || e == EADDRNOTAVAIL)) {
+        /* we ran out of local sockets, sleep for a little while */
+        if (config_opts.verbose > 0)
+            fprintf(stderr, "Ran out of local sockets, sleeping until "
+                    "more become available\n");
+        /* FIXME: sleep for 30 seconds, THIS MAY NOT WORK YET */
+        event_once(0, EV_TIMEOUT, process_idle, conn, &tv30sec);
+        goto out; /* skip the n_dispatched++ line */
+    } else {
+        conn->state = ST_ERROR;
+        if (config_opts.verbose > 2)
+            perror("connect");
+        goto out;
     }
 
     n_dispatched++; /* assumes non-reentrancy throughout above function */
+out:
     process_state(conn);
 }
 

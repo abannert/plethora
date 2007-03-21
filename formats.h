@@ -1,4 +1,4 @@
-/* $Id: formats.h,v 1.3 2007/01/17 20:53:13 aaron Exp $ */
+/* $Id: formats.h,v 1.4 2007/03/21 16:49:23 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -25,20 +25,30 @@
 #define __formats_h
 
 #include "config.h"
+#include "metrics.h"
 
 /**
  * Treat the given double as a high-precision microsecond (us) timer
  * and format it into pretty-printable units.
+ * Returns the number of bytes written.
  */
 int format_double_timer(char *buf, size_t buflen, double time_us);
 
 /**
+ * Pretty-print the given timeval.
+ * Returns the number of bytes written.
+ */
+int format_double_timeval(char *buf, size_t buflen, struct timeval *tv);
+
+/**
  * Format the given double as bytes into pretty-printable units.
+ * Returns the number of bytes written.
  */
 int format_double_bytes(char *buf, size_t buflen, double bytes);
 
 /**
  * Format the given bytes into pretty-printable units.
+ * Returns the number of bytes written.
  */
 int format_bytes(char *buf, size_t buflen, unsigned long long bytes);
 

@@ -1,4 +1,4 @@
-/* $Id: metrics.c,v 1.5 2007/01/17 20:54:24 aaron Exp $ */
+/* $Id: metrics.c,v 1.6 2007/03/21 16:50:02 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -96,24 +96,24 @@ void accumulate_metrics(struct accumulator *acc, struct metrics *metrics)
     timeradd(&acc->total.close, &mdiff.close, &acc->total.close);
 
     // set MINs and MAXs
-    if (timercmp(&mdiff.connect, <, &acc->min.connect)) {
+    if (timercmp(&mdiff.connect, &acc->min.connect, <)) {
         acc->min.connect = mdiff.connect;
-    } else if (timercmp(&mdiff.connect, >, &acc->max.connect)) {
+    } else if (timercmp(&mdiff.connect, &acc->max.connect, >)) {
         acc->max.connect = mdiff.connect;
     }
-    if (timercmp(&mdiff.write, <, &acc->min.write)) {
+    if (timercmp(&mdiff.write, &acc->min.write, <)) {
         acc->min.write = mdiff.write;
-    } else if (timercmp(&mdiff.write, >, &acc->max.write)) {
+    } else if (timercmp(&mdiff.write, &acc->max.write, >)) {
         acc->max.write = mdiff.write;
     }
-    if (timercmp(&mdiff.read, <, &acc->min.read)) {
+    if (timercmp(&mdiff.read, &acc->min.read, <)) {
         acc->min.read = mdiff.read;
-    } else if (timercmp(&mdiff.read, >, &acc->max.read)) {
+    } else if (timercmp(&mdiff.read, &acc->max.read, >)) {
         acc->max.read = mdiff.read;
     }
-    if (timercmp(&mdiff.close, <, &acc->min.close)) {
+    if (timercmp(&mdiff.close, &acc->min.close, <)) {
         acc->min.close = mdiff.close;
-    } else if (timercmp(&mdiff.close, >, &acc->max.close)) {
+    } else if (timercmp(&mdiff.close, &acc->max.close, >)) {
         acc->max.close = mdiff.close;
     }
 }

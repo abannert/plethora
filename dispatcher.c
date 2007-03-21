@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.9 2007/03/21 16:28:03 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.10 2007/03/21 17:09:11 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -233,7 +233,19 @@ retry:
         conn->state = ST_ERROR;
         goto out;
     } else { // successful read, not sure if we have everything yet
-        char *end = strstr(conn->buf + conn->nbytes, "\r\n");
+        char *end;
+
+        if (conn->nbytes == 0) { /* first read on this connection */
+            int rv = measure(ME_FIRST, &conn->metrics);
+            int e = errno;
+            if (rv < 0) {
+                conn->error = e;
+                conn->state = ST_ERROR;
+                goto out;
+            }
+        }
+
+        end = strstr(conn->buf + conn->nbytes, "\r\n");
         conn->responselen += count;
         conn->nbytes += count;
         if (end == NULL) { // not found

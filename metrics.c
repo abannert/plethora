@@ -1,4 +1,4 @@
-/* $Id: metrics.c,v 1.7 2007/03/21 16:51:30 aaron Exp $ */
+/* $Id: metrics.c,v 1.8 2007/03/21 17:09:11 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -43,6 +43,8 @@ int measure(enum metric_type type, struct metrics *metrics)
             tv = &metrics->connect; break;
         case ME_WRITE:
             tv = &metrics->write; break;
+        case ME_FIRST:
+            tv = &metrics->first; break;
         case ME_READ:
             tv = &metrics->read; break;
         case ME_CLOSE:
@@ -59,6 +61,8 @@ int start_accumulator(struct accumulator *acc)
     acc->min.connect.tv_usec = LONG_MAX;
     acc->min.write.tv_sec = LONG_MAX;
     acc->min.write.tv_usec = LONG_MAX;
+    acc->min.first.tv_sec = LONG_MAX;
+    acc->min.first.tv_usec = LONG_MAX;
     acc->min.read.tv_sec = LONG_MAX;
     acc->min.read.tv_usec = LONG_MAX;
     acc->min.close.tv_sec = LONG_MAX;
@@ -86,12 +90,14 @@ void accumulate_metrics(struct accumulator *acc, struct metrics *metrics)
     // calculate diff from epoch
     timersub(&metrics->connect, &metrics->epoch, &mdiff.connect);
     timersub(&metrics->write, &metrics->epoch, &mdiff.write);
+    timersub(&metrics->first, &metrics->epoch, &mdiff.first);
     timersub(&metrics->read, &metrics->epoch, &mdiff.read);
     timersub(&metrics->close, &metrics->epoch, &mdiff.close);
 
     // add diff to total
     timeradd(&acc->total.connect, &mdiff.connect, &acc->total.connect);
     timeradd(&acc->total.write, &mdiff.write, &acc->total.write);
+    timeradd(&acc->total.first, &mdiff.first, &acc->total.first);
     timeradd(&acc->total.read, &mdiff.read, &acc->total.read);
     timeradd(&acc->total.close, &mdiff.close, &acc->total.close);
 
@@ -105,6 +111,11 @@ void accumulate_metrics(struct accumulator *acc, struct metrics *metrics)
         acc->min.write = mdiff.write;
     } else if (timercmp(&mdiff.write, &acc->max.write, >)) {
         acc->max.write = mdiff.write;
+    }
+    if (timercmp(&mdiff.first, &acc->min.first, <)) {
+        acc->min.first = mdiff.first;
+    } else if (timercmp(&mdiff.first, &acc->max.first, >)) {
+        acc->max.first = mdiff.first;
     }
     if (timercmp(&mdiff.read, &acc->min.read, <)) {
         acc->min.read = mdiff.read;
@@ -167,6 +178,7 @@ int print_accumulator(FILE *stream, struct accumulator *acc)
     i += fprintf(stream, " Metrics:  type\t\t mean\t\t   min/max\t\t total\n");
     PRINT_STATS(stream, acc, connect);
     PRINT_STATS(stream, acc, write);
+    PRINT_STATS(stream, acc, first);
     PRINT_STATS(stream, acc, read);
     PRINT_STATS(stream, acc, close);
     (void)format_double_timer(total, sizeof(total),
@@ -181,21 +193,23 @@ int print_accumulator(FILE *stream, struct accumulator *acc)
 
 int print_metrics(FILE *stream, struct metrics *metrics)
 {
-    char cobuf[100], wbuf[100], rbuf[100], clbuf[100];
-    struct timeval co, w, r, cl;
+    char cobuf[100], wbuf[100], fbuf[100], rbuf[100], clbuf[100];
+    struct timeval co, w, f, r, cl;
 
     /* FIXME: print header lines every once in awhile */
 
     timersub(&metrics->connect, &metrics->epoch, &co);
     timersub(&metrics->write, &metrics->epoch, &w);
+    timersub(&metrics->first, &metrics->epoch, &f);
     timersub(&metrics->read, &metrics->epoch, &r);
     timersub(&metrics->close, &metrics->epoch, &cl);
 
     (void)format_double_timeval(cobuf, sizeof(cobuf), &co);
     (void)format_double_timeval(wbuf, sizeof(wbuf), &w);
+    (void)format_double_timeval(fbuf, sizeof(fbuf), &f);
     (void)format_double_timeval(rbuf, sizeof(rbuf), &r);
     (void)format_double_timeval(clbuf, sizeof(clbuf), &cl);
 
-    return fprintf(stream, "%s\t%s\t%s\t%s\n",
-                   cobuf, wbuf, rbuf, clbuf);
+    return fprintf(stream, "%s\t%s\t%s\t%s\t%s\n",
+                   cobuf, wbuf, fbuf, rbuf, clbuf);
 }

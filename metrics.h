@@ -1,4 +1,4 @@
-/* $Id: metrics.h,v 1.5 2007/01/17 20:54:24 aaron Exp $ */
+/* $Id: metrics.h,v 1.6 2007/03/21 17:09:11 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -70,6 +70,7 @@ enum metric_type {
     ME_EPOCH,
     ME_CONNECT,
     ME_WRITE,
+    ME_FIRST,
     ME_READ,
     ME_CLOSE,
 };
@@ -78,6 +79,7 @@ struct metrics {
     struct timeval epoch;   /* when the test was started */
     struct timeval connect; /* time when connect completed */
     struct timeval write;   /* time when request write completed */
+    struct timeval first;   /* time when first byte of response was read */
     struct timeval read;    /* time when response read completed */
     struct timeval close;   /* time when close completed */
 };

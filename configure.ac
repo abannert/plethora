@@ -1,6 +1,6 @@
-AC_PREREQ(2.60)
+AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright 2006-2007 Codemass, Inc.  All rights reserved.  Use is subject to the license terms.])
-AC_REVISION($Revision: 1.5 $)
+AC_REVISION($Revision: 1.6 $)
 AC_INIT([plethora], [0.0.1], [aaron-plethora@codemass.com])
 
 AC_CONFIG_SRCDIR([plethora.c])

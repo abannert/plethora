@@ -1,4 +1,4 @@
-/* $Id: formats.c,v 1.4 2007/03/21 16:49:23 aaron Exp $ */
+/* $Id: formats.c,v 1.5 2007/03/21 17:08:35 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -34,7 +34,7 @@ int format_double_timer(char *buf, size_t buflen, double time_us)
     if (time_us < 1000.0)
         return snprintf(buf, buflen, "%6.2lfms", time_us);
     time_us /= 1000.0; // change to seconds
-    return snprintf(buf, buflen, "%6.2lfs", time_us);
+    return snprintf(buf, buflen, "%6.2lfs ", time_us);
 }
 
 int format_double_timeval(char *buf, size_t buflen, struct timeval *tv)
@@ -47,7 +47,7 @@ int format_double_timeval(char *buf, size_t buflen, struct timeval *tv)
 int format_double_bytes(char *buf, size_t buflen, double bytes)
 {
     if (bytes < 1024)
-        return snprintf(buf, buflen, "%.3fB", bytes);
+        return snprintf(buf, buflen, "%.3fB ", bytes);
     bytes /= 1024;
     if (bytes < 1024)
         return snprintf(buf, buflen, "%.3fkB", bytes);

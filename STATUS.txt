@@ -9,6 +9,7 @@
 Releases
 --------
 
+  0.0.2      - In Development
   0.0.1      - Tagged and Released on 12-Feb-2007
 
 Release Showstoppers
@@ -59,6 +60,9 @@ Known Bugs
 Wishlist
 --------
 
+* Add a reasonable global timeout so that any stalled sockets will be
+  terminated after X seconds (where X is something like 120).
+
 * Allow setting of buffer sizes at runtime.
 
 * Add support for delays at various points in the request/response
@@ -108,3 +112,18 @@ Release 0.0.1:
   for first distribution.
 
 * Added build/roll.sh to automate rolling of tarballs.
+
+
+Release 0.0.2:
+
+* Fix non-blocking connect(). There was a bug that treated in-progress
+  connect() attempts as being complete, which skewed the metrics and
+  caused the next state to block until the connect completed.
+
+* Improved handling of EADDRNOTAVAIL which happens when we run out of
+  client ports. This support is not yet fully tested and probably
+  needs more work.
+
+* Added support at verbosity level 1 for printing the timing metrics
+  (connect/read/write/close) for every request as it completes.
+

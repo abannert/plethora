@@ -127,3 +127,9 @@ Release 0.0.2:
 * Added support at verbosity level 1 for printing the timing metrics
   (connect/read/write/close) for every request as it completes.
 
+* Fix off-by-two error when calculating header length that would cause
+  extra junk to be written to the request after the end of the headers.
+
+* Add support for tracking the time until the first byte is received
+  from the server.
+

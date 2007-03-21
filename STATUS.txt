@@ -9,7 +9,7 @@
 Releases
 --------
 
-  0.2.0      - In Development
+  0.2.0      - Tagged and Released on 21-Mar-2007
   0.1.0      - Renamed Tag 0.0.1
   0.0.1      - Tagged and Released on 12-Feb-2007
 
@@ -133,4 +133,7 @@ Release 0.2.0:
 
 * Add support for tracking the time until the first byte is received
   from the server.
+
+* Always add the "Connection: close" header to requests, since we don't
+  currently support KeepAlive requests in Plethora.
 

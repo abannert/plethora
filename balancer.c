@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.9 2007/03/21 16:28:03 aaron Exp $ */
+/* $Id: balancer.c,v 1.10 2007/03/21 17:02:42 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -58,13 +58,13 @@ static size_t resource_length(struct location *location)
     rlen += uri->path ? strlen(uri->path) : sizeof("/") - 1;
     rlen += uri->query ? strlen(uri->query) + 1 : 0;
     /* FIXME: do we add fragments to client requests? */
-    rlen += uri->fragment ? strlen(uri->fragment) + 1: 0;
+    rlen += uri->fragment ? strlen(uri->fragment) + 1 : 0;
     return rlen;
 }
 
 static size_t request_length(struct location *location)
 {
-    size_t rlen = 1; /* for the null */
+    size_t rlen = 0;
     struct headers *header = config_opts.headers;
     rlen += sizeof("GET ") - 1;
     rlen += resource_length(location);
@@ -82,7 +82,7 @@ static size_t request_length(struct location *location)
     }
     rlen += sizeof("Host: ") - 1;
     rlen += strlen(location->uri->hostname);
-    rlen += sizeof("\r\n\r\n");
+    rlen += sizeof("\r\n\r\n") - 1;
     return rlen;
 }
 
@@ -111,7 +111,8 @@ static void create_request(struct location *location)
     struct headers *header = config_opts.headers;
     char *p;
     location->rlen = request_length(location);
-    p = malloc(location->rlen);
+    p = malloc(location->rlen) + 1;
+    memset(p, 0, location->rlen + 1);
     location->request = p;
     p += write_resource(location->uri, p);
     while (1) {

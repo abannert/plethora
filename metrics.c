@@ -1,4 +1,4 @@
-/* $Id: metrics.c,v 1.6 2007/03/21 16:50:02 aaron Exp $ */
+/* $Id: metrics.c,v 1.7 2007/03/21 16:51:30 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -181,6 +181,21 @@ int print_accumulator(FILE *stream, struct accumulator *acc)
 
 int print_metrics(FILE *stream, struct metrics *metrics)
 {
-    /* FIXME: implement this */
-    return 0;
+    char cobuf[100], wbuf[100], rbuf[100], clbuf[100];
+    struct timeval co, w, r, cl;
+
+    /* FIXME: print header lines every once in awhile */
+
+    timersub(&metrics->connect, &metrics->epoch, &co);
+    timersub(&metrics->write, &metrics->epoch, &w);
+    timersub(&metrics->read, &metrics->epoch, &r);
+    timersub(&metrics->close, &metrics->epoch, &cl);
+
+    (void)format_double_timeval(cobuf, sizeof(cobuf), &co);
+    (void)format_double_timeval(wbuf, sizeof(wbuf), &w);
+    (void)format_double_timeval(rbuf, sizeof(rbuf), &r);
+    (void)format_double_timeval(clbuf, sizeof(clbuf), &cl);
+
+    return fprintf(stream, "%s\t%s\t%s\t%s\n",
+                   cobuf, wbuf, rbuf, clbuf);
 }

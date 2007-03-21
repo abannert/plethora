@@ -1,4 +1,4 @@
-/* $Id: metrics.h,v 1.6 2007/03/21 17:09:11 aaron Exp $ */
+/* $Id: metrics.h,v 1.7 2007/03/21 20:35:55 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -34,7 +34,7 @@
 
 /* Adapted from various sources, including BSD's sys/time.h */
 #ifndef timercmp
-#define timercmp(tv1, CMP, tv2) \
+#define timercmp(tv1, tv2, CMP) \
     (tv1)->tv_sec == (tv2)->tv_sec ? \
     (tv1)->tv_usec CMP (tv2)->tv_usec : \
     (tv1)->tv_sec CMP (tv2)->tv_sec

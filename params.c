@@ -1,4 +1,4 @@
-/* $Id: params.c,v 1.3 2007/01/17 20:55:01 aaron Exp $ */
+/* $Id: params.c,v 1.4 2007/03/21 20:37:08 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -52,6 +52,7 @@ static struct headers default_headers[] = {
     { "User-Agent", PACKAGE_NAME "/" PACKAGE_VERSION, NULL, NULL },
     { "Accept", "*/*", NULL, NULL},
     { "Pragma", "no-cache", NULL, NULL},
+    { "Connection", "close", NULL, NULL},
     { NULL, NULL, NULL, NULL },
 };
 

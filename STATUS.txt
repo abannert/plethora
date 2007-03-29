@@ -64,6 +64,9 @@ Wishlist
 * Add a reasonable global timeout so that any stalled sockets will be
   terminated after X seconds (where X is something like 120).
 
+* Resolve DNS once per request, not only once at startup, to support services
+  that use round-robin DNS.
+
 * Allow setting of buffer sizes at runtime.
 
 * Add support for delays at various points in the request/response
@@ -136,4 +139,10 @@ Release 0.2.0:
 
 * Always add the "Connection: close" header to requests, since we don't
   currently support KeepAlive requests in Plethora.
+
+
+Release 0.2.1:
+
+* Fix a bug in the location resolver that ignored the -C parameter for
+  overriding the hostname from the test URL.
 

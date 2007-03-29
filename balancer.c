@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.10 2007/03/21 17:02:42 aaron Exp $ */
+/* $Id: balancer.c,v 1.11 2007/03/29 19:31:38 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -136,7 +136,10 @@ static void set_locations(struct urls *urls)
             fprintf(stderr, "error parsing URI: %s, failing\n", urls->url);
             exit(-4);
         }
-        hostent = gethostbyname(locations[i].uri->hostname);
+        if (config_opts.connect)
+            hostent = gethostbyname(config_opts.connect);
+        else
+            hostent = gethostbyname(locations[i].uri->hostname);
         if (hostent == NULL) {
             fprintf(stderr, "gethostbyname error resolving %s: %s\n",
                     locations[i].uri->hostname,

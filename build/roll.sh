@@ -100,6 +100,7 @@ echo "Preparing $CVSMODULE source directory..."
     sh ./buildconf || die "buildconf failed"
     rm -rf autom4te.cache
     rm -f .cvsignore
+    touch .deps
 ) || die
 echo
 

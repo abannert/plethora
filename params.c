@@ -1,4 +1,4 @@
-/* $Id: params.c,v 1.4 2007/03/21 20:37:08 aaron Exp $ */
+/* $Id: params.c,v 1.5 2007/03/30 21:12:08 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -201,7 +201,8 @@ void print_config_opts(FILE *stream)
         headers = headers->next;
     }
     if (config_opts.connect)
-        fprintf(stream, "Connecting to this host: %s\n", config_opts.connect);
+        fprintf(stream, "Connecting to this host (-C): %s\n",
+                config_opts.connect);
     fprintf(stream, "Concurrency (-c): %d\n", config_opts.concurrency);
     fprintf(stream, "Total request count (-n): %d\n", config_opts.count);
     fprintf(stream, "Verbosity level (-v): %d\n", config_opts.verbose);

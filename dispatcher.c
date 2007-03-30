@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.10 2007/03/21 17:09:11 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.11 2007/03/30 21:11:53 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -99,7 +99,7 @@ void process_calculating(struct connection *conn)
     /* add metrics from this run to global total */
     accumulate_metrics(&global_accumulator, &conn->metrics);
 
-    if (config_opts.verbose > 0)
+    if (config_opts.verbose > 1)
         print_metrics(stdout, &conn->metrics);
 
     conn->state = ST_CLEANUP;

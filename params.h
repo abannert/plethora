@@ -1,4 +1,4 @@
-/* $Id: params.h,v 1.3 2007/01/17 20:55:01 aaron Exp $ */
+/* $Id: params.h,v 1.4 2007/03/30 21:42:01 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -47,6 +47,7 @@ struct config_opts {
     struct urls *urls;
     struct headers *headers;
     char *connect;
+    unsigned short connect_port;
     int verbose;
     int concurrency;
     int count;

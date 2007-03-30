@@ -146,3 +146,8 @@ Release 0.2.1:
 * Fix a bug in the location resolver that ignored the -C parameter for
   overriding the hostname from the test URL.
 
+* Only print the metrics for each request when two or more -v's are used.
+
+* Added support for ports into the -C parameter, for example:
+    -C www.example.com:81
+

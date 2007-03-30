@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.11 2007/03/29 19:31:38 aaron Exp $ */
+/* $Id: balancer.c,v 1.12 2007/03/30 21:42:01 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -129,6 +129,8 @@ static void set_locations(struct urls *urls)
 {
     int i;
     for (i = 0; i < n_locations; i++) {
+        const char *host;
+        unsigned short port;
         struct hostent *hostent;
         locations[i].uristr = urls->url;
         locations[i].uri = parse_uri(urls->url);
@@ -136,14 +138,18 @@ static void set_locations(struct urls *urls)
             fprintf(stderr, "error parsing URI: %s, failing\n", urls->url);
             exit(-4);
         }
-        if (config_opts.connect)
-            hostent = gethostbyname(config_opts.connect);
-        else
-            hostent = gethostbyname(locations[i].uri->hostname);
+        host = locations[i].uri->hostname;
+        port = htons(locations[i].uri->port);
+        if (config_opts.connect) {
+            host = config_opts.connect;
+            if (config_opts.connect_port) {
+                port = htons(config_opts.connect_port);
+            }
+        }
+         hostent = gethostbyname(host);
         if (hostent == NULL) {
             fprintf(stderr, "gethostbyname error resolving %s: %s\n",
-                    locations[i].uri->hostname,
-                    hstrerror(h_errno));
+                    host, hstrerror(h_errno));
             exit(-4);
         }
         if (hostent->h_addrtype == AF_INET) {
@@ -151,7 +157,7 @@ static void set_locations(struct urls *urls)
             locations[i].name = (struct sockaddr *)sa;
             locations[i].namelen = sizeof(*sa);
             sa->sin_family = hostent->h_addrtype;
-            sa->sin_port = htons(locations[i].uri->port);
+            sa->sin_port = port;
             memcpy(&(sa->sin_addr.s_addr), hostent->h_addr_list[0], hostent->h_length);
         } else if (hostent->h_addrtype == AF_INET6) {
             fprintf(stderr, "ipv6 not yet supported\n");

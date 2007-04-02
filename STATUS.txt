@@ -26,13 +26,17 @@ Release Showstoppers
 * Docuemnt typically usage, including how to deal with file-descriptor
   limits and other OS-limitations (eg. Mac OS X). (man page?)
 
+* Document typical build instructions, including use of LDFLAGS and
+  CFLAGS (eg.
+    CFLAGS="-Wall -g -I/usr/local/include" \
+    LDFLAGS="-L/usr/local/lib" ./configure
+
+* Write support for "make install".
+
 * Optionally allow the client to continue trying to connect even upon
   connect failure, if there have been successful connects already. This
   will let us maintain load on a server instead of suddenly stopping the
   test.
-
-* Fix a bug where we don't actually do non-blocking connects because we
-  don't properly detect the EINPROGRESS error from connect().
 
 Known Bugs
 ----------

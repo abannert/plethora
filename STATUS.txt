@@ -38,6 +38,8 @@ Release Showstoppers
   will let us maintain load on a server instead of suddenly stopping the
   test.
 
+* We seem to be leaking file descriptors in the error code path.
+
 Known Bugs
 ----------
 

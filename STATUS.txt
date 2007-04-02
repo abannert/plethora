@@ -9,6 +9,8 @@
 Releases
 --------
 
+  0.2.2      - In Development
+  0.2.1      - Tagged and Released on 30-Mar-2007
   0.2.0      - Tagged and Released on 21-Mar-2007
   0.1.0      - Renamed Tag 0.0.1
   0.0.1      - Tagged and Released on 12-Feb-2007
@@ -150,4 +152,10 @@ Release 0.2.1:
 
 * Added support for ports into the -C parameter, for example:
     -C www.example.com:81
+
+
+Release 0.2.2:
+
+* Added support for checking and reporting on HTTP response failures.
+  Anything 4xx or 5xx is considered a fatal error.
 

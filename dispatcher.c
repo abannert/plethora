@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.11 2007/03/30 21:11:53 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.12 2007/04/02 17:05:15 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -74,10 +74,15 @@ static void process_state(struct connection *conn);
 void process_error(struct connection *conn)
 {
     conn->location->n_errors++;
-    if (config_opts.verbose > 0)
+    if (conn->error == -1) {
+        fprintf(stderr, "HTTP error code %d (%s) connecting to %s\n",
+                conn->resp_code, conn->resp_str,
+                conn->location->uri->hostname);
+    } else {
         fprintf(stderr, "socket failure %d (%s) connecting to %s\n",
                 conn->error, strerror(conn->error),
                 conn->location->uri->hostname);
+    }
     conn->state = ST_CLEANUP;
     process_state(conn);
 }
@@ -141,9 +146,14 @@ void process_read(struct connection *conn)
     if (rv < 0) {
         conn->error = e;
         conn->state = ST_ERROR;
+    } else if (conn->resp_code >= 400 && conn->resp_code <= 599) {
+        /* Check the response code, if it was 4xx or 5xx then error out */
+        conn->error = -1;
+        conn->state = ST_ERROR;
     } else {
         conn->state = ST_CLOSING;
     }
+
     process_state(conn);
 }
 
@@ -167,8 +177,6 @@ retry:
                 fprintf(stderr, "read(%d) received EAGAIN, sleeping\n", fd);
             goto out;
         }
-        // FIXME: what about standard read failures?
-#if 0
         else {
             if (config_opts.verbose > 0)
                 fprintf(stderr, "read(%d) received error %s, failing\n", fd,
@@ -177,7 +185,6 @@ retry:
             conn->state = ST_ERROR;
             goto out;
         }
-#endif
     } else if (count == 0) { // EOF
         conn->state = ST_READ;
         if (config_opts.verbose > 4)
@@ -214,8 +221,6 @@ retry:
                 fprintf(stderr, "read(%d) received EAGAIN, sleeping\n", fd);
             goto out;
         }
-        // FIXME: what about standard read failures?
-#if 0
         else {
             if (config_opts.verbose > 0)
                 fprintf(stderr, "read(%d) received error %s, failing\n", fd,
@@ -224,7 +229,6 @@ retry:
             conn->state = ST_ERROR;
             goto out;
         }
-#endif
     } else if (count == 0) { // EOF
         // error, because we didn't find the \r\n on a previous call
         if (config_opts.verbose > 0)

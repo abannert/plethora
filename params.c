@@ -1,4 +1,4 @@
-/* $Id: params.c,v 1.6 2007/03/30 21:42:01 aaron Exp $ */
+/* $Id: params.c,v 1.7 2007/11/28 16:38:59 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include <ctype.h>
 
 #include "config.h"
 #include "params.h"
@@ -102,6 +103,54 @@ static struct headers *parse_header_param(const char *optarg)
     }
 }
 
+/**
+ * Lower-case a string in-place.
+ */
+#define LC(s) \
+do { \
+    ssize_t len = strlen(s); \
+    int i; \
+    for (i = 0; i < len; i++) { \
+        s[i] = tolower(s[i]); \
+    } \
+} while (0)
+
+/**
+ * Add the given header to the header list, overwriting any previous
+ * header entries having the same (case-insensitive) key.
+ */
+static void overwrite_header(struct headers **headers, struct headers *header)
+{
+    /* find any previous instance of the header (case-insensitive) and delete */
+    char *newheader = strdup(header->header);
+    struct headers *p = *headers;
+
+    /* lower-case the new header */
+    LC(newheader);
+
+    while (1) {
+        /* lower-case the old header */
+        char *oldheader = strdup(p->header);
+        LC(oldheader);
+
+        if (strcmp(newheader, oldheader) == 0) {
+            /* delete the old header key and value */
+            free(p->header);
+            free(p->value);
+            p->header = header->header;
+            p->value = header->value;
+            free(header);
+            return;
+        }
+
+        if (p->next == *headers)
+            break;
+        p = p->next;
+    }
+    /* no match found, append the new header to the end of the list */
+    RING_APPEND((*headers), header);
+}
+
 void parse_args(int argc, char *argv[])
 {
     long l;
@@ -119,9 +168,9 @@ void parse_args(int argc, char *argv[])
                     fprintf(stderr, "error parsing -H parameter\n");
                     print_help(stderr, progname);
                     exit(-1);
+                } else {
+                    overwrite_header(&config_opts.headers, header);
                 }
-                /* FIXME: overwrite pre-existing headers */
-                RING_APPEND(config_opts.headers, header);
                 break;
             case 'C':
                 {

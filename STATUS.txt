@@ -167,3 +167,6 @@ Release 0.2.2:
   Anything 4xx or 5xx is considered a fatal error.
 
 Release 0.2.3:
+
+* Added support for overwriting headers using the -H parameter.
+

@@ -9,7 +9,7 @@
 Releases
 --------
 
-  0.2.3      - In Development
+  0.2.3      - Tagged and Released on 28-Nov-2007
   0.2.2      - Tagged and Released on 2-Apr-2007
   0.2.1      - Tagged and Released on 30-Mar-2007
   0.2.0      - Tagged and Released on 21-Mar-2007

@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.12 2007/04/02 17:05:15 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.13 2007/11/28 16:38:38 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -179,8 +179,8 @@ retry:
         }
         else {
             if (config_opts.verbose > 0)
-                fprintf(stderr, "read(%d) received error %s, failing\n", fd,
-                        strerror(e));
+                fprintf(stderr, "write(%d) received fatal error: (%d) %s\n", e,
+                        fd, strerror(e));
             conn->error = e;
             conn->state = ST_ERROR;
             goto out;
@@ -207,10 +207,19 @@ void process_reading_header(int fd, short event, void *_conn)
     int e;
 
 retry:
+    errno = 0;
     count = read(fd, conn->buf + conn->nbytes,
                      sizeof(conn->buf) - conn->nbytes - 1);
                      // leave space for the \0
+
     e = errno;
+
+    if (config_opts.verbose > 5)
+            fprintf(stderr, "fd %d attempted to read %ld bytes, got "
+                    "%ld bytes (errno %d: %s)\n",
+                    fd, sizeof(conn->buf) - conn->nbytes - 1,
+                    count, e, strerror(e));
+
     if (count < 0) {
         if (e == EINTR) {
             if (config_opts.verbose > 3)
@@ -223,8 +232,8 @@ retry:
         }
         else {
             if (config_opts.verbose > 0)
-                fprintf(stderr, "read(%d) received error %s, failing\n", fd,
-                        strerror(e));
+                fprintf(stderr, "write(%d) received fatal error: (%d) %s\n", fd,
+                        e, strerror(e));
             conn->error = e;
             conn->state = ST_ERROR;
             goto out;
@@ -318,9 +327,17 @@ void process_writing(int fd, short event, void *_conn)
     int e;
 
 retry_write:
+    errno = 0;
     count = write(fd, conn->location->request + conn->written,
                   conn->location->rlen - conn->written);
     e = errno;
+
+    if (config_opts.verbose > 5)
+            fprintf(stderr, "fd %d attempted to write %ld bytes, wrote "
+                    "%ld bytes (errno %d: %s)\n",
+                    fd, conn->location->rlen - conn->written,
+                    count, e, strerror(e));
+
     if (count < 0 && e == EINTR) {
         if (config_opts.verbose > 3)
             fprintf(stderr, "write(%d) received EINTR, retrying\n", fd);
@@ -333,8 +350,8 @@ retry_write:
     } else if (count < 0) {
         /* some error occurred */
         if (config_opts.verbose > 3)
-            fprintf(stderr, "write(%d) received error %s, sleeping\n", fd,
-                    strerror(e));
+            fprintf(stderr, "write(%d) received fatal error: (%d) %s\n", e,
+                    fd, strerror(e));
         conn->error = e;
         conn->state = ST_ERROR;
         goto out;
@@ -401,6 +418,17 @@ void process_connecting(int fd, short event, void *_conn)
         conn->state = ST_ERROR;
     } else {
         /* no error, ready to read */
+        if (config_opts.verbose > 5) {
+                const char *evt = "(none)";
+                if (event & (EV_READ|EV_WRITE))
+                    evt = "EV_READ|EV_WRITE";
+                else if (event & EV_READ)
+                    evt = "EV_READ";
+                else if (event & EV_READ)
+                    evt = "EV_WRITE";
+                fprintf(stderr, "fd %d connect() completed [event %s]\n",
+                        fd, evt);
+        }
         conn->state = ST_CONNECTED;
     }
 

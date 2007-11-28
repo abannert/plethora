@@ -66,6 +66,8 @@ Known Bugs
         /* Initialize the kernel queue */
         if ((dpfd = open("/dev/poll", O_RDWR)) == -1) {
 
+* Segfault:
+    LD_LIBRARY_PATH=/usr/home/aaron/dist/libevent-1.3b/lib ~aaron/downloads/plethora-0.2.2/plethora -C t33 -c 10 -n 50 -v http://t33/pop/news/ -H "Host: m.technorati.com"
 
 Wishlist
 --------
@@ -81,6 +83,8 @@ Wishlist
 * Add support for delays at various points in the request/response
   state to allow for higher concurrency testing without overloading
   the client or server CPUs or network unnecessarily.
+
+* Track which request iteration hits for the min/max.
 
 Done
 ----

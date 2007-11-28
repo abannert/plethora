@@ -40,6 +40,9 @@ Release Showstoppers
 * Allow multiple headers of the same value, while also allowing default
   headers to be disabled when needed.
 
+* Detect the printf format string for size_t and ssize_t (and maybe off_t too)
+  or start depending on APR to do this (it seems to handle this well).
+
 Known Bugs
 ----------
 

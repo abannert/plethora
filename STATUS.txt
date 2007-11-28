@@ -86,6 +86,8 @@ Wishlist
 
 * Track which request iteration hits for the min/max.
 
+* Support persistent HTTP sessions (keepalive).
+
 Done
 ----
 
@@ -170,7 +172,17 @@ Release 0.2.2:
 * Added support for checking and reporting on HTTP response failures.
   Anything 4xx or 5xx is considered a fatal error.
 
+
 Release 0.2.3:
 
 * Added support for overwriting headers using the -H parameter.
+
+* Changed default behavior so that the socket is no longer shutdown
+  for writes on the client side after sending the headers. Some HTTP
+  implementations (like Akami) appear to be incompatible with this
+  behavior.
+
+* Added support for (-o) halfopen parameter, so that we can still have
+  the halfopen behavior if desired (where we shutdown the socket for
+  writes on client side after sending the headers).
 

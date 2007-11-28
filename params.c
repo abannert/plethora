@@ -1,4 +1,4 @@
-/* $Id: params.c,v 1.7 2007/11/28 16:38:59 aaron Exp $ */
+/* $Id: params.c,v 1.8 2007/11/28 16:55:56 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -31,7 +31,7 @@
 #include "config.h"
 #include "params.h"
 
-static char *opts = "H:C:c:n:vh";
+static char *opts = "H:C:c:n:vho";
 
 static void print_help(FILE *stream, const char *progname)
 {
@@ -43,6 +43,7 @@ static void print_help(FILE *stream, const char *progname)
     fprintf(stream, " -c <num> - concurrency level\n");
     fprintf(stream, " -n <num> - number of requests to make total\n");
     fprintf(stream, " -M <num> - maximum number of connect errors allowed, -1 to disable\n");
+    fprintf(stream, " -o - half-open mode (shutdown socket for writes after sending headers)\n");
     fprintf(stream, " -v - verbose mode (add multiple times for higher verbosity)\n");
     fprintf(stream, "Hint: use \"--\" to stop argument parsing\n");
 }
@@ -74,6 +75,7 @@ static void initialize_params()
     memset(&config_opts, 0, sizeof(config_opts));
     config_opts.concurrency = 1;
     config_opts.count = 1;
+    config_opts.halfopen = 0;
     add_default_headers();
     config_opts.max_connect_errors = MAX_CONNECT_ERRORS;
 }
@@ -228,6 +230,9 @@ void parse_args(int argc, char *argv[])
                 }
                 config_opts.count = (int)l;
                 break;
+            case 'o':
+                config_opts.halfopen = 1;
+                break;
             case 'v':
                 config_opts.verbose++;
                 break;
@@ -285,6 +290,9 @@ void print_config_opts(FILE *stream)
     }
     fprintf(stream, "Concurrency (-c): %d\n", config_opts.concurrency);
     fprintf(stream, "Total request count (-n): %d\n", config_opts.count);
+    fprintf(stream, "Shutdown socket for writes after sending headers "
+                    "(halfopen) (-o): %s\n",
+                    config_opts.halfopen ? "true" : "false");
     fprintf(stream, "Verbosity level (-v): %d\n", config_opts.verbose);
     fprintf(stream, "\n");
 }

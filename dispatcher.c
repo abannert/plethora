@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.13 2007/11/28 16:38:38 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.14 2007/11/28 16:55:56 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -307,7 +307,13 @@ void process_written(struct connection *conn)
         goto out;
     }
 
-    if (shutdown(conn->socket, SHUT_WR) < 0) {
+/* Akami (and probably some other HTTP implementations) don't allow half-open
+ * sockets, which are HTTP sessions where from the client's perspective the
+ * socket is closed for writes immediately after sending the headers.
+ * So disable this behavior by default.
+ */
+    if (config_opts.halfopen
+        && shutdown(conn->socket, SHUT_WR) < 0) {
         conn->error = errno;
         conn->state = ST_ERROR;
         fprintf(stderr, "error shutting down fd %d for writes: %s\n",

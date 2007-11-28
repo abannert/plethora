@@ -20,10 +20,6 @@ Releases
 Release Showstoppers
 --------------------
 
-* When headers are added (or added with a blank value) they should over-
-  ride (or disable) a pre-existing header value for the same header.
-  - Perhaps allow multiple Cookie headers, to support this spec violation?
-
 * Docuemnt typically usage, including how to deal with file-descriptor
   limits and other OS-limitations (eg. Mac OS X). (man page?)
 
@@ -41,6 +37,9 @@ Release Showstoppers
 
 * We seem to be leaking file descriptors in the error code path.
 
+* Allow multiple headers of the same value, while also allowing default
+  headers to be disabled when needed.
+
 Known Bugs
 ----------
 
@@ -52,6 +51,7 @@ Known Bugs
 * Doesn't work on Mac OS X/Darwin due to bug in kqueue that doesn't handle
   non-blocking connect() calls. (Requires disabling kqueue by setting an
   environment variable that is picked up by libevent.)
+    - This appears to work properly now with libevent-1.3b and/or Leopard.
 
 * Libevent-1.1a has a devpoll bug, here's the patch to fix it:
 
@@ -66,9 +66,6 @@ Known Bugs
  
         /* Initialize the kernel queue */
         if ((dpfd = open("/dev/poll", O_RDWR)) == -1) {
-
-* Segfault:
-    LD_LIBRARY_PATH=/usr/home/aaron/dist/libevent-1.3b/lib ~aaron/downloads/plethora-0.2.2/plethora -C t33 -c 10 -n 50 -v http://t33/pop/news/ -H "Host: m.technorati.com"
 
 Wishlist
 --------

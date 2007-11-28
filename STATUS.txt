@@ -9,6 +9,7 @@
 Releases
 --------
 
+  0.2.4      - In Development
   0.2.3      - Tagged and Released on 28-Nov-2007
   0.2.2      - Tagged and Released on 2-Apr-2007
   0.2.1      - Tagged and Released on 30-Mar-2007
@@ -185,4 +186,7 @@ Release 0.2.3:
 * Added support for (-o) halfopen parameter, so that we can still have
   the halfopen behavior if desired (where we shutdown the socket for
   writes on client side after sending the headers).
+
+
+Release 0.2.4:
 

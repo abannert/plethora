@@ -46,6 +46,14 @@ Release Showstoppers
 Known Bugs
 ----------
 
+* Header disabling doesn't appear to work, eg. -H Pragma still sends the
+  "Pragma: no-cache" header..
+
+* When testing multiple URLs at the same time, the calculation for
+  average requests/second for each URL is incorrect. It should be based
+  on the total accumulated time for each URL's test, not on the total time
+  for all tests.
+
 * When the client runs out of sockets, we get an EADDRNOTAVAIL (on Solaris 10)
   which looks like "Can't assign requested address". We should either
   provide instructions for increasing system limits or we should retry

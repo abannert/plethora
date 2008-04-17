@@ -1,4 +1,4 @@
-/* $Id: metrics.c,v 1.8 2007/03/21 17:09:11 aaron Exp $ */
+/* $Id: metrics.c,v 1.9 2008/04/17 16:23:13 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -73,10 +73,14 @@ int start_accumulator(struct accumulator *acc)
 int stop_accumulator(struct accumulator *acc)
 {
     struct timezone tz; /* ignored */
-    int ret = gettimeofday(&acc->stop, &tz);
+    int ret;
+    if (acc->complete)
+        return -1; /* already stopped */
+    ret = gettimeofday(&acc->stop, &tz);
     if (ret < 0)
         return ret;
     timersub(&acc->stop, &acc->start, &acc->tdiff); // calc the tdiff
+    acc->complete = 1;
     return ret;
 }
 

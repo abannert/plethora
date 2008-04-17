@@ -1,4 +1,4 @@
-/* $Id: balancer.h,v 1.4 2007/01/17 20:51:39 aaron Exp $ */
+/* $Id: balancer.h,v 1.5 2008/04/17 16:23:13 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -44,6 +44,7 @@ struct location {
 
     int n_errors;
     int n_connects;
+    int n_concurrent; /* total currently connected to this location */
     struct accumulator accumulator;
 };
 
@@ -52,6 +53,7 @@ void initialize_balancer();
 struct location *get_next_location();
 
 int location_connect(struct location *location, int sock);
+int location_close(struct location *location, int sock);
 
 int balancer_display(FILE *stream);
 

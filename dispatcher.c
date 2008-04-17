@@ -1,4 +1,4 @@
-/* $Id: dispatcher.c,v 1.14 2007/11/28 16:55:56 aaron Exp $ */
+/* $Id: dispatcher.c,v 1.15 2008/04/17 16:23:13 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -126,7 +126,7 @@ void process_closed(struct connection *conn)
 
 void process_closing(struct connection *conn)
 {
-    int rc = close(conn->socket);
+    int rc = location_close(conn->location, conn->socket);
     if (rc < 0) {
         conn->error = errno;
         conn->state = ST_ERROR;

@@ -49,11 +49,6 @@ Known Bugs
 * Header disabling doesn't appear to work, eg. -H Pragma still sends the
   "Pragma: no-cache" header..
 
-* When testing multiple URLs at the same time, the calculation for
-  average requests/second for each URL is incorrect. It should be based
-  on the total accumulated time for each URL's test, not on the total time
-  for all tests.
-
 * When the client runs out of sockets, we get an EADDRNOTAVAIL (on Solaris 10)
   which looks like "Can't assign requested address". We should either
   provide instructions for increasing system limits or we should retry
@@ -80,6 +75,9 @@ Known Bugs
 
 Wishlist
 --------
+
+* Add users to switch between different balancer behaviors (round-robin vs. lowest
+  concurrency).
 
 * Add a reasonable global timeout so that any stalled sockets will be
   terminated after X seconds (where X is something like 120).
@@ -198,3 +196,6 @@ Release 0.2.3:
 
 Release 0.2.4:
 
+* Change the balancer algorithm from simple round-robin to lowest-concurrency. That
+  means that each location will have a more equal number of concurrent connections
+  to it, allowing faster locations to complete more quickly.

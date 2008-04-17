@@ -1,4 +1,4 @@
-/* $Id: metrics.h,v 1.7 2007/03/21 20:35:55 aaron Exp $ */
+/* $Id: metrics.h,v 1.8 2008/04/17 16:23:13 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -93,6 +93,8 @@ struct accumulator {
     struct metrics min;
     struct metrics max;
     int total_measurements;
+
+    char complete;          /* boolean, set after this accumulator is done */
 };
 
 int start_accumulator(struct accumulator *acc);

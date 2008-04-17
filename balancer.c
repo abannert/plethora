@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.12 2007/03/30 21:42:01 aaron Exp $ */
+/* $Id: balancer.c,v 1.13 2008/04/17 16:23:13 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -178,20 +179,53 @@ static void set_locations(struct urls *urls)
     }
 }
 
+static int max_connects_per_location;
 void initialize_balancer()
 {
     n_locations = count_locations(config_opts.urls);
     locations = malloc(sizeof(struct location) * n_locations);
     memset(locations, 0, sizeof(struct location) * n_locations);
     set_locations(config_opts.urls);
+    max_connects_per_location = config_opts.count / n_locations;
 }
 
-static int current_location = -1;
+static int current_location_rr = -1;
+struct location *get_next_location_rr()
+{
+    /* Round-Robin */
+    if (++current_location_rr >= n_locations)
+        current_location_rr = 0;
+    return &locations[current_location_rr];
+}
+
+struct location *get_next_location_fair()
+{
+    int i;
+    struct location *lowconn_loc = NULL;
+    /* FIXME: improve the efficiency of this for larger numbers of locations
+     * by using a heap */
+    for (i = 0; i < n_locations; i++) {
+        struct location *testloc = &locations[i];
+        if (testloc->n_connects > max_connects_per_location)
+            continue;
+        else if (lowconn_loc == NULL)
+            lowconn_loc = testloc;
+        else if (testloc->n_concurrent < lowconn_loc->n_concurrent)
+            lowconn_loc = testloc;
+    }
+
+    if (lowconn_loc == NULL) {
+        return NULL; /* no more locations left */
+    } else {
+        lowconn_loc->n_concurrent++;
+        return lowconn_loc;
+    }
+}
+
 struct location *get_next_location()
 {
-    if (++current_location >= n_locations)
-        current_location = 0;
-    return &locations[current_location];
+    /* FIXME: allow user to chose between Round-Robin and Fair */
+    return get_next_location_fair();
 }
 
 int location_connect(struct location *location, int sock)
@@ -199,8 +233,8 @@ int location_connect(struct location *location, int sock)
     int e;
     int rc;
     if (config_opts.verbose > 4)
-        fprintf(stderr, "connect_next(%d), current_location is %d\n",
-                sock, current_location);
+        fprintf(stderr, "location_connect(location '%s', sock %d)\n",
+                location->uristr, sock);
 retry_connect:
     if (location->n_errors >= config_opts.max_connect_errors) {
         fprintf(stderr, "Exceeded maximum connect errors for host: %s:%d\n",
@@ -212,7 +246,7 @@ retry_connect:
         fprintf(stderr, "connect()ing to socket %d\n", sock);
     rc = connect(sock, location->name, location->namelen);
     e = errno;
-    if (rc < 0) {
+    if (rc < 0) { /* failed connect */
         switch (e) {
         case EINTR:
             goto retry_connect;
@@ -230,6 +264,19 @@ retry_connect:
         };
     }
     location->n_connects++;
+    return rc;
+}
+
+int location_close(struct location *location, int sock)
+{
+    int rc;
+    rc = close(sock);
+    if (rc == 0) { /* if successful close(), decrease concurrency count */
+        location->n_concurrent--;
+        if (location->n_connects > max_connects_per_location) {
+            (void)stop_accumulator(&location->accumulator);
+        }
+    }
     return rc;
 }
 

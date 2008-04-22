@@ -199,3 +199,8 @@ Release 0.2.4:
 * Change the balancer algorithm from simple round-robin to lowest-concurrency. That
   means that each location will have a more equal number of concurrent connections
   to it, allowing faster locations to complete more quickly.
+
+* Fixed a bug that was caused by a misplaced parenthesis, causing a short
+  buffer that would result in buffer overflows (corrupted headers) but only
+  in rare conditions.
+

@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.14 2008/04/22 16:27:54 aaron Exp $ */
+/* $Id: balancer.c,v 1.15 2008/04/22 16:29:36 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -112,7 +112,7 @@ static void create_request(struct location *location)
     struct headers *header = config_opts.headers;
     char *p;
     location->rlen = request_length(location);
-    p = malloc(location->rlen) + 1;
+    p = malloc(location->rlen + 1);
     memset(p, 0, location->rlen + 1);
     location->request = p;
     p += write_resource(location->uri, p);

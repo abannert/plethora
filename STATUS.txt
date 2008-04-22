@@ -20,6 +20,8 @@ Releases
 Release Showstoppers
 --------------------
 
+* Support the -M parameter (max-connect-errors).
+
 * Docuemnt typically usage, including how to deal with file-descriptor
   limits and other OS-limitations (eg. Mac OS X). (man page?)
 

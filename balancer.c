@@ -1,4 +1,4 @@
-/* $Id: balancer.c,v 1.13 2008/04/17 16:23:13 aaron Exp $ */
+/* $Id: balancer.c,v 1.14 2008/04/22 16:27:54 aaron Exp $ */
 /* Copyright 2006-2007 Codemass, Inc.  All rights reserved.
  * Use is subject to license terms.
  *
@@ -147,7 +147,7 @@ static void set_locations(struct urls *urls)
                 port = htons(config_opts.connect_port);
             }
         }
-         hostent = gethostbyname(host);
+        hostent = gethostbyname(host);
         if (hostent == NULL) {
             fprintf(stderr, "gethostbyname error resolving %s: %s\n",
                     host, hstrerror(h_errno));
@@ -159,7 +159,8 @@ static void set_locations(struct urls *urls)
             locations[i].namelen = sizeof(*sa);
             sa->sin_family = hostent->h_addrtype;
             sa->sin_port = port;
-            memcpy(&(sa->sin_addr.s_addr), hostent->h_addr_list[0], hostent->h_length);
+            memcpy(&(sa->sin_addr.s_addr), hostent->h_addr_list[0],
+                   hostent->h_length);
         } else if (hostent->h_addrtype == AF_INET6) {
             fprintf(stderr, "ipv6 not yet supported\n");
             exit(-3);

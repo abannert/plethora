@@ -97,6 +97,11 @@ Wishlist
 
 * Support persistent HTTP sessions (keepalive).
 
+* Support SSL.
+
+* Support libcurl (may also provide SSL support automatically).
+
+
 Done
 ----
 
